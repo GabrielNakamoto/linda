@@ -1,0 +1,20 @@
+
+fn attn: (x, q, v) {
+  if (foo)
+    foo = (q @ v).T() # transpose
+    z = foo / (v.exp() + q.sqrt())
+  } fi {
+    yield x + 27.0
+  }
+  yield (z * (q - 3)).R(64,32) # reshape
+}
+
+fn main: {
+  x := T::i32[64,128]
+  y := T::f32[128, 256]
+  z := T::f8[10, 20000, 39, 4]
+
+  foo = x @ y # 64,256
+  z = attn(x,y).relu()
+  z.print()
+}
