@@ -27,4 +27,6 @@ jobs:
 
       # Runs a set of commands using the runners shell
       - name: Test lexer
-        run: zig test src/lexer.zig
+        run: |
+          sudo apt update && sudo apt install -y zig
+          zig test src/lexer.zig
