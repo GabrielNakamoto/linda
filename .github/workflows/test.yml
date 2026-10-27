@@ -24,9 +24,11 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
+      - name: Install Zig
+        uses: mlugg/setup-zig@v2
+        with:
+          version: latest
 
       # Runs a set of commands using the runners shell
       - name: Test lexer
-        run: |
-          sudo apt update && sudo apt install -y zig
-          zig test src/lexer.zig
+        run: zig test src/lexer.zig
