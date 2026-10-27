@@ -8,6 +8,9 @@ const lexer = @import("lexer");
 // interprets structure from a flat stream of tokens
 
 // formal(ish) grammar:
+// <module> ->
+// <func> ->
+
 // module := []
 // func := [block]
 // block := { [expr] ... }

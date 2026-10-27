@@ -1,27 +1,5 @@
 const std = @import("std");
 
-pub const Token = enum {
-  LBrace, RBrace,
-  LBrack, RBrack,
-  LSbrack, RSbrack,
-  Add, Mul, Sub, Div,
-  Mmul,
-  Comment, // #
-  Decl, // :=
-  Tensor, // ::
-  Assign,
-  Literal,
-  Symbol,
-  Comma,
-  Call,
-  Eof,
-};
-
-pub const Literal = union(enum) {
-  int: i32,
-  float: f32
-};
-
 pub const Lexer  = struct {
   buffer: []const u8,
   cur: usize,
@@ -29,6 +7,24 @@ pub const Lexer  = struct {
   last_symbol: ?[]const u8,
   last_literal: ?Literal,
   cached: ?Token,
+
+  pub const Token = enum {
+    LBrace, RBrace,
+    LBrack, RBrack,
+    LSbrack, RSbrack,
+    Add, Mul, Sub, Div, Mmul,
+    Tensor, Assign,
+    Literal, Symbol,
+    Comma, Call,
+    Comment,
+    Endl,
+    Eof,
+  };
+
+  pub const Literal = union(enum) {
+    int: i32,
+    float: f32
+  };
 
   pub fn init(buffer: []const u8) Lexer {
     return Lexer{
@@ -41,13 +37,8 @@ pub const Lexer  = struct {
     };
   }
 
-  pub fn symbol(self: Lexer) ?[]const u8 {
-    return self.last_symbol;
-  }
-
-  pub fn literal(self: Lexer) ?Literal {
-    return self.last_literal;
-  }
+  pub fn symbol(self: Lexer) ?[]const u8 { return self.last_symbol; }
+  pub fn literal(self: Lexer) ?Literal { return self.last_literal; }
 
   pub fn consume(self: *Lexer) void {
     std.debug.assert(self.next > self.cur);
@@ -77,55 +68,57 @@ pub const Lexer  = struct {
 
   pub fn peek(self: *Lexer) ?Token {
     if (self.cached) |tk| return tk;
-
     self.next = self.cur;
 
     while (self.next < self.buffer.len and std.ascii.isWhitespace(self.buffer[self.next])) : (self.next += 1) {}
     if (self.next == self.buffer.len) return .Eof;
 
-    const tok: ?Token = switch (self.buffer[self.next]) {
-      '#' => {
-        while (self.next < self.buffer.len and self.buffer[self.next] != '\n') : (self.next += 1) {}
-        return .Comment;
-      },
+    const simple_tok: ?Token = switch (self.buffer[self.next]) {
       '(' => .LBrack, ')' => .RBrack,
       '{' => .LBrace, '}' => .RBrace,
       '[' => .LSbrack, ']' => .RSbrack,
+      ';' => .Endl,
       '+' => .Add, '-' => .Sub,
       '/' => .Div, '*' => .Mul,
-      '@' => .Mmul,
-      ',' => .Comma,
-      '.' => .Call,
-      ':' => {
-        if(self.buffer.len > self.next+1) {
-          const cc = self.buffer[self.next+1];
-          if (cc == '=' or cc == ':') {
-            self.next += 2;
-            return .Decl if cc == '=' else .Tensor;
-         }
-        }
-        self.next += 1;
-        return .Assign;
-      },
-      '0'...'9' => {
-        self.last_literal = self.readLiteral();
-        self.cached = .Literal;
-        return .Literal;
-      },
-      'a'...'z', 'A'...'Z', '_' => {
-        self.last_symbol = self.readSymbol();
-        self.cached = .Symbol;
-        return .Symbol;
-      },
-      else => {
-        std.debug.print("WARNING: cannot tokenize: {c}\n", .{self.buffer[self.next]});
-        return null;
-      }
+      '@' => .Mmul, ',' => .Comma,
+      '.' => .Call, '=' => .Assign,
+      else => null
     };
 
-    self.next += 1;
-    self.cached = tok;
-    return tok;
+    if (simple_tok) |tk| {
+      self.next += 1;
+      self.cached = tk;
+      return tk;
+    }
+
+    const final_tok: ?Token = switch (self.buffer[self.next]) {
+      '#' => blk: {
+        while (self.next < self.buffer.len and self.buffer[self.next] != '\n') : (self.next += 1) {}
+        break :blk .Comment;
+      },
+      ':' => blk: {
+        std.debug.assert(self.buffer.len > self.next+1);
+        std.debug.assert(self.buffer[self.next+1] == ':');
+        self.next += 2;
+        break :blk .Tensor;
+      },
+      '0'...'9' => blk: {
+        self.last_literal = self.readLiteral();
+        break :blk .Literal;
+      },
+      'a'...'z', 'A'...'Z', '_' => blk: {
+        self.last_symbol = self.readSymbol();
+        break :blk .Symbol;
+      },
+      else => null
+    };
+
+    if (final_tok) |tk| {
+      self.cached = tk;
+    } else {
+      std.debug.print("WARNING: cannot tokenize: {c}\n", .{self.buffer[self.next]});
+    }
+    return final_tok;
   }
 };
 
@@ -134,7 +127,6 @@ pub const Lexer  = struct {
 
 
 // ****** Testing Code *****
-
 test "test lex simple program" {
   const io = std.testing.io;
   const gpa = std.testing.allocator;
@@ -145,31 +137,49 @@ test "test lex simple program" {
 
   std.debug.print("src program: {s}\n", .{buf});
 
-  const expected_toks = [_]Token {
-    .Symbol, .Symbol, .LSbrack, .Literal, .Comma, .Literal, .RSbrack,       // f32 y[64, 128]
-    .Symbol, .Symbol, .LSbrack, .Literal, .Comma, .Literal, .RSbrack,       // i32 z[128, 256]
-
-    .Symbol, .Assign, .Symbol, .Mmul, .Symbol,                              // x := y @ z
-    .Symbol, .Assign, .Symbol, .Call, .Symbol, .LBrack, .RBrack,            // l := x.relu()
-
-    .LBrack, .Symbol, .Comma, .Symbol, .RBrack, .Symbol, .Assign, .LBrace,  // (x, y) attn := {
-    .Symbol, .Assign, .LBrack, .Symbol, .Call,                              //    x := (x.transpose() * 3.0) - 290.3
-    .Symbol, .LBrack, .RBrack, .Mul, .Literal, .RBrack, .Sub, .Literal,
-    .Symbol, .Mmul, .Symbol,                                                //    x @ y
-    .RBrace                                                                 // }
+  const expected_toks = [_]Lexer.Token {
+    .Symbol, .Symbol, .LBrack, .Symbol, .Comma, .Symbol, .Comma, .Symbol, .RBrack, .LBrace, // fn attn (x, q, v) {
+    .Symbol, .LBrack, .Symbol, .RBrack,                            // if (foo)
+    .Symbol, .Assign, .LBrack, .Symbol, .Mmul, .Symbol, .RBrack, .Call, .Symbol, .LBrack, .RBrack, .Endl, .Comment, // foo = (q @ v).T() # transpose
+    .Symbol, .Assign, .Symbol, .Div, .LBrack, .Symbol, .Call, .Symbol, .LBrack, .RBrack, .Add, .Symbol, .Call, .Symbol, .LBrack, .RBrack, .RBrack, .Endl, // z = foo / (v.exp() + q.sqrt())
+    .RBrace, .Symbol, .LBrace,                                     // } fi {
+    .Symbol, .Symbol, .Add, .Literal, .Endl,                              // yield x + 27.0
+    .RBrace,                                                       // }
+    .Symbol, .LBrack, .Symbol, .Mul, .LBrack, .Symbol, .Sub, .Literal, .RBrack, .RBrack, .Call, .Symbol, .LBrack, .Literal, .Comma, .Literal, .RBrack, .Endl, .Comment, // yield (z * (q - 3)).R(64,32) # reshape
+    .RBrace,                                                       // }
+    .Symbol, .Symbol, .LBrace,                                     // fn main {
+    .Symbol, .Assign, .Symbol, .Tensor, .Symbol, .LSbrack, .Literal, .Comma, .Literal, .RSbrack, .Endl, // x := T::i32[64,128]
+    .Symbol, .Assign, .Symbol, .Tensor, .Symbol, .LSbrack, .Literal, .Comma, .Literal, .RSbrack, .Endl, // y := T::f32[128, 256]
+    .Symbol, .Assign, .Symbol, .Tensor, .Symbol, .LSbrack, .Literal, .Comma, .Literal, .Comma, .Literal, .Comma, .Literal, .RSbrack, .Endl, // z := T::f8[10, 20000, 39, 4]
+    .Symbol, .Assign, .Symbol, .Mmul, .Symbol, .Endl, .Comment,           // foo = x @ y # 64,256
+    .Symbol, .Assign, .Symbol, .LBrack, .Symbol, .Comma, .Symbol, .RBrack, .Call, .Symbol, .LBrack, .RBrack, .Endl, // z = attn(x,y).relu()
+    .Symbol, .Call, .Symbol, .LBrack, .RBrack, .Endl,                     // z.print()
+    .RBrace,                                                       // }
   };
 
   const expected_symbols = [_][] const u8 {
-    "f32", "y", "i32", "z",
-    "x", "y", "z", "l", "x",
-    "relu", "x", "y", "attn",
-    "x", "x", "transpose", "x", "y"
+    "fn", "attn", "x", "q", "v",
+    "if", "foo",
+    "foo", "q", "v", "T",
+    "z", "foo", "v", "exp", "q", "sqrt",
+    "fi",
+    "yield", "x",
+    "yield", "z", "q", "R",
+    "fn", "main",
+    "x", "T", "i32",
+    "y", "T", "f32",
+    "z", "T", "f8",
+    "foo", "x", "y",
+    "z", "attn", "x", "y", "relu",
+    "z", "print",
   };
 
-  const expected_literals = [_] Literal {
+  const expected_literals = [_] Lexer.Literal {
+    .{ .float = 27.0 },
+    .{ .int = 3 }, .{ .int = 64 }, .{ .int = 32 },
     .{ .int = 64 }, .{ .int = 128 },
     .{ .int = 128 }, .{ .int = 256 },
-    .{ .float = 3.0 }, .{ .float = 290.3 }
+    .{ .int = 10 }, .{ .int = 20000 }, .{ .int = 39 }, .{ .int = 4 },
   };
 
   var lexer = Lexer.init(buf);
