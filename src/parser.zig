@@ -8,21 +8,21 @@ pub const Parser = struct {
 
   pub fn init(stream: lexer.Lexer) Parser { return .{ .stream = stream }; }
 
-  pub fn deinit(self: *Parser) void {
-    _ = self;
-    // deallocate AST?
-    // or is that caller responsibility
-  }
-
   // TODO: return ParseError?
-  fn getSymbol(self: *Parser) []const u8 {
-    std.debug.assert(self.stream.peek() == .Symbol);
-    return self.stream.symbol().?;
+  fn getSymbol(self: *Parser) ![]const u8 {
+    const next = try self.stream.peek(0);
+    std.debug.assert(next.a == .Symbol and next.b != null);
+    self.stream.step();
+    switch (next.b.?) {
+      .string => |val| return val,
+      else => return error.ParseError,
+    }
   }
 
-  fn expectConsume(self: *Parser, tk: lexer.Lexer.Token) void {
-    std.debug.assert(self.stream.peek() == tk);
-    self.stream.consume();
+  fn expectStep(self: *Parser, kind: lexer.Lexer.TokenKind) !void {
+    const next = try self.stream.peek(0);
+    if (next.a != kind) return error.ParseError;
+    self.stream.step();
   }
 
   fn parseYieldExpr(self: *Parser) ast.Expr {
@@ -44,49 +44,59 @@ pub const Parser = struct {
   }
 
   fn parseDecl(self: *Parser) !ast.Decl {
-    const id = self.getSymbol();
-    self.stream.consume();
-    self.expectConsume(.Assign);
+    const id = try self.getSymbol();
+    self.stream.step();
+    try self.expectStep(.Assign);
     return ast.Decl.init(id, try self.parseExprOrLit());
   }
 
   fn parseFunc(self: *Parser) !ast.Func {
-    self.stream.consume();
-    const id = self.getSymbol();
+    self.stream.step();
+    const id = try self.getSymbol();
     var params = ListType([]const u8).init();
     var body = ListType(ast.Expr).init();
 
-    self.expectConsume(.LBrack);
-    while(self.stream.peek() != .Eof) : (self.expectConsume(.Comma)) {
-      try params.insert(self.getSymbol());
-      self.stream.consume();
+    std.debug.print("parse func: {s}\n", .{id});
 
-      if (self.stream.peek() != .Comma) break;
+    try self.expectStep(.LBrack);
+    var tok = try self.stream.peek(0);
+    while(tok.a != .Eof) : (tok = try self.stream.peek(0)) {
+      try params.insert(try self.getSymbol());
+
+      const next = try self.stream.peek(0);
+      if (next.a != .Comma) break;
+      self.stream.step();
     }
-    self.expectConsume(.RBrack);
+    try self.expectStep(.RBrack);
 
-    self.expectConsume(.LBrace);
-    while (self.stream.peek() != .Eof) {
-      const sym = self.getSymbol();
+    try self.expectStep(.LBrace);
+    tok = try self.stream.peek(0);
+    while (tok.a != .Eof) : (tok = try self.stream.peek(0)) {
+      const sym = try self.getSymbol();
       if (std.mem.eql(u8, sym, "yield")) {
         try body.insert(self.parseYieldExpr());
       } else {
         try body.insert(self.parseDecl());
       }
     }
-    self.expectConsume(.RBrace);
+    try self.expectStep(.RBrace);
 
     return ast.Func.init(id, params, body);
   }
 
   pub fn parse(self: *Parser) !ast.Module {
-    var funcs: ListType(ast.Func) = ListType(ast.Func).init();
-    while (self.stream.peek()) |tok| : (self.stream.consume()) {
-      if (tok == .Eof) break;
-      if (tok == .Comment) continue;
+    try self.stream.tokenize(true);
+    defer self.stream.deinit();
 
-      std.debug.assert(std.mem.eql(u8, self.getSymbol(), "fn"));
-      try funcs.insert(self.parseFunc());
+    var funcs: ListType(ast.Func) = ListType(ast.Func).init();
+    var tok = try self.stream.peek(0);
+    while (tok.a != .Eof) : (self.stream.step()) {
+      if (tok.a == .Comment) continue;
+
+      std.debug.assert(std.mem.eql(u8, try self.getSymbol(), "fn"));
+      const func = try self.parseFunc();
+      try funcs.insert(func);
+      tok = try self.stream.peek(0);
     }
     return ast.Module.init(funcs);
   }
@@ -103,6 +113,6 @@ test "test parse simple program" {
 
   std.debug.print("src program: (s)\n", .{buf});
   var parser = Parser.init(lexer.Lexer.init(buf));
-  const module = parser.parse();
+  const module = try parser.parse();
   _ = module;
 }

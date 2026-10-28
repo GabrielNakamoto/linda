@@ -3,15 +3,13 @@ const common = @import("common.zig");
 
 // lex entire input buffer in single pass, caching the tokens so its easy
 // to arbitrarily look ahead in stream and increment ptr
+// TODO: return Error on unexpected EoF
+// NOTE: stop using optionals arbitrarily, should only be used when a none value is expected behaviour. should be
+// using error unions/exceptions in most cases instead of conflating
 pub const Lexer  = struct {
   buffer: []const u8,
   tokens: common.ListType(Token),
   next: usize = 0,
-
-  pub const LexerError = error{
-    UnexpectedEof,
-    SyntaxError
-  };
 
   pub const TokenKind = enum {
     LBrace, RBrace,
@@ -38,9 +36,8 @@ pub const Lexer  = struct {
     }
   };
 
-  pub const Token = common.Pair(TokenKind, ?Literal);
-
   pub const Literal = union(enum) { int: i32, float: f32, string: []const u8 };
+  pub const Token = common.Pair(TokenKind, ?Literal);
 
   pub fn init(buffer: []const u8) Lexer {
     return Lexer{ .buffer = buffer, .tokens = common.ListType(Token).init() };
@@ -50,13 +47,15 @@ pub const Lexer  = struct {
     self.tokens.deinit();
   }
 
-  pub fn consume(self: *Lexer) void {
+  pub fn step(self: *Lexer) void {
     std.debug.assert(self.next + 1 < self.tokens.slice().len);
     self.next += 1;
   }
 
-  pub fn peek(self: *Lexer, i: u32) ?Token {
-    std.debug.assert(self.next + i < self.tokens.slice().len);
+  pub fn peek(self: *Lexer, i: u32) !Token {
+    if (self.next + i >= self.tokens.slice().len) {
+      return error.OutOfBounds;
+    }
     return self.tokens.slice()[self.next + i];
   }
 
@@ -66,7 +65,7 @@ pub const Lexer  = struct {
     return .{ .string = self.buffer[start..self.next]};
   }
 
-  fn readLiteral(self: *Lexer) ?Literal {
+  fn readLiteral(self: *Lexer) !Literal {
     var is_float = false;
     const start = self.next;
     while (std.ascii.isDigit(self.buffer[self.next]) or self.buffer[self.next] == '.') : (self.next += 1) {
@@ -74,13 +73,13 @@ pub const Lexer  = struct {
     }
 
     if (is_float) {
-      return .{ .float = std.fmt.parseFloat(f32, self.buffer[start..self.next]) catch return null };
+      return .{ .float = try std.fmt.parseFloat(f32, self.buffer[start..self.next])};
     } else {
-      return .{ .int = std.fmt.parseInt(i32, self.buffer[start..self.next], 10) catch return null };
+      return .{ .int = try std.fmt.parseInt(i32, self.buffer[start..self.next], 10)};
     }
   }
 
-  fn complex_tok(self: *Lexer) ?Token {
+  fn complex_tok(self: *Lexer) !?Token {
     return switch (self.buffer[self.next]) {
       '#' => blk: {
         while (self.next < self.buffer.len and self.buffer[self.next] != '\n') : (self.next += 1) {}
@@ -92,7 +91,7 @@ pub const Lexer  = struct {
         break :blk Token.init(.Tensor, null);
       },
       'a'...'z', 'A'...'Z' => Token.init(.Symbol, self.readSymbol()),
-      '0'...'9' => Token.init(.Literal, self.readLiteral()),
+      '0'...'9' => Token.init(.Literal, try self.readLiteral()),
       else => null
     };
   }
@@ -105,13 +104,13 @@ pub const Lexer  = struct {
       if (TokenKind.simple(self.buffer[self.next])) |kind| {
         try self.tokens.insert(Token.init(kind, null));
         self.next += 1;
-      } else if (self.complex_tok()) |tok| {
+      } else if (try self.complex_tok()) |tok| {
         if (!ignore_comments or tok.a != .Comment) {
           try self.tokens.insert(tok);
         }
       } else {
         std.debug.print("Syntax error while tokenizing src: {c}\n", .{self.buffer[self.next]});
-        return LexerError.SyntaxError;
+        return error.SyntaxError;
       }
     }
     try self.tokens.insert(Token.init(.Eof, null));
@@ -181,9 +180,10 @@ test "test lex simple program" {
   var lexer = Lexer.init(buf);
   defer lexer.deinit();
   try lexer.tokenize(false);
+  try std.testing.expectEqual(lexer.tokens.slice().len, expected_tokens.len);
 
   for (expected_tokens, 0..) |valid, i| {
-    const tok = lexer.peek(0) orelse return error.TestExpectedEqual;
+    const tok = try lexer.peek(0);
 
     std.debug.print("[{d}]: {s}\t", .{i, @tagName(tok.a)});
     if (tok.b) |lit| {
@@ -198,7 +198,7 @@ test "test lex simple program" {
     try expectTokenEqual(valid, tok);
 
     if (tok.a == .Eof) break;
-    lexer.consume();
+    lexer.step();
   }
 }
 
