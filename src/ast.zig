@@ -1,32 +1,55 @@
 const std = @import("std");
 
-const Literal = union {
-  string: []const u8,
-  float: f32,
-  int: i32,
-};
+fn ListType(comptime T: type) type {
+  return struct {
+    const Self = @This();
+
+    buffer: std.ArrayList(T) = .empty,
+    gpa: std.heap.DebugAllocator(.{}),
+
+    pub fn init() Self { return .{ .gpa = std.heap.DebugAllocator(.{}){} }; }
+    pub fn slice(self: *const Self) []const T { return self.buffer.items; }
+    pub fn insert(self: *Self, item: T) std.mem.Allocator.Error!void {
+      return self.buffer.append(self.gpa.allocator(), item);
+    }
+    pub fn deinit(self: *Self) void {
+      self.buffer.deinit(self.gpa.allocator());
+    }
+  };
+}
+
+pub const Literal = union(enum) { string: []const u8, float: f32, int: i32, };
+pub const ExprOrLit = union(enum) { expr: *const Expr, lit: Literal };
 
 // module -> <func> <module>?
 pub const Module = struct {
-  funcs: []Func
+  funcs: ListType(Func),
+
+  pub fn init(funcs: ListType(Func)) Module {
+    return .{.funcs = funcs};
+  }
 };
 
-pub const BlockExpr = union {
-  expr: Expr,
+// block_expr -> <decl> | <expr>
+pub const BlockExpr = union(enum) {
+  expr: *const Expr,
   decl: Decl
 };
+
 // func -> fn <id> (<arg_list>) <block>
 // block -> { <expression_list> }
 // expression_list -> <block_expr> ';' <expression_list>?
-// block_expr -> <decl> | <expr>
 pub const Func = struct {
   id: []const u8,
-  params: [][]const u8,
-  body: []BlockExpr
+  params: ListType([]const u8),
+  body: ListType(BlockExpr),
+
+  pub fn init(id: []const u8, params: ListType([]const u8), body: ListType(BlockExpr)) Func {
+    return .{ .id = id, .params = params, .body = body };
+  }
 };
 
-pub const Expr = union {
-  lit: Literal,
+pub const Expr = union(enum) {
   call: CallExpr,
   binop: BinExpr,
   tdecl: TensorDecl,
@@ -35,7 +58,11 @@ pub const Expr = union {
 
 // expr -> "yield" <expr>
 pub const YieldExpr = struct {
-  val: Expr,
+  val: ExprOrLit,
+
+  pub fn init(val: ExprOrLit) Expr {
+    return Expr{ .yield = .{.val = val}};
+  }
 };
 
 // expr -> <id> '.' <id> '(' <arg_list> ')'
@@ -43,38 +70,68 @@ pub const YieldExpr = struct {
 pub const CallExpr = struct {
   id: []const u8,
   // note expressions cant be evaluated in args
-  args: []Literal
+  args: ListType(Literal),
+
+  pub fn init(id: []const u8, args: ListType(Literal)) Expr {
+    return Expr { .call = .{ .id = id, .args = args } };
+  }
 };
 
 // expr -> <prim> ('+'|'-'|'*'|'/'|'@') <rhs>
+// how to describe this?
 pub const BinExpr = struct {
-  lhs: Expr,
-  rhs: Expr
+  lhs: ExprOrLit,
+  rhs: ExprOrLit
 };
 
 // expr -> 'T::' <id> '[' <shape> ']'
 // shape_list -> <nat> ',' <shape_list>?
 pub const TensorDecl = struct {
   dtype: []const u8, // TODO: enum
-  shape: []const u32
+  shape: ListType(u32),
+
+  pub fn init(dtype: []const u8, shape: ListType(u32)) Expr {
+    return Expr { .tdecl = .{.dtype = dtype, .shape = shape}};
+  }
 };
 
 // decl -> <id> '=' <expr>
 pub const Decl = struct {
   id: []const u8,
-  val: Expr
+  val: ExprOrLit,
+
+  pub fn init(id: []const u8, val: ExprOrLit) Decl {
+    return .{ .id = id, .val = val};
+  }
 };
 
-
 test "test ast" {
-  const main = Func {
-    .id = "main",
-    .body = [_]BlockExpr {
-      Decl{ .id = "x", .val = TensorDecl { .dtype = "f32", .shape = .{ 64, 32 } } },
-      CallExpr { .id = "sparse_categorical_crossentropy", .args = .{ "x" } },
-      YieldExpr { .val = Literal { "x" } }
-    }
-  };
-  const program: Module = .{ .funcs = .{main} };
-  std.debug.print("{}\n", .{program});
+  var shape = ListType(u32).init();
+  defer shape.deinit();
+  try shape.insert(64);
+  try shape.insert(32);
+
+  var args = ListType(Literal).init();
+  defer args.deinit();
+  try args.insert(Literal{.string = "x"});
+
+  const tdecl = TensorDecl.init("f32", shape);
+  const decl = Decl.init("x", .{ .expr = &tdecl});
+  const call = CallExpr.init("sparse_categorical_crossentropy", args);
+  const yield = YieldExpr.init(.{ .lit = Literal { .string = "x" }});
+
+  var body = ListType(BlockExpr).init();
+  defer body.deinit();
+  try body.insert(.{ .decl = decl });
+  try body.insert(.{ .expr = &call});
+  try body.insert(.{ .expr = &yield});
+
+  const main = Func.init("main", ListType([]const u8).init(), body);
+  std.debug.print("{}\n", .{body.slice()[0]});
+
+  var funcs = ListType(Func).init();
+  defer funcs.deinit();
+  try funcs.insert(main);
+  const program = Module.init(funcs);
+  _ = program;
 }

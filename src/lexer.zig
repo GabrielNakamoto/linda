@@ -2,11 +2,11 @@ const std = @import("std");
 
 pub const Lexer  = struct {
   buffer: []const u8,
-  cur: usize,
-  next: usize,
-  last_symbol: ?[]const u8,
-  last_literal: ?Literal,
-  cached: ?Token,
+  cur: usize = 0,
+  next: usize = 0,
+  last_symbol: ?[]const u8 = null,
+  last_literal: ?Literal = null,
+  cached: ?Token = null,
 
   pub const Token = enum {
     LBrace, RBrace,
@@ -27,14 +27,7 @@ pub const Lexer  = struct {
   };
 
   pub fn init(buffer: []const u8) Lexer {
-    return Lexer{
-      .buffer = buffer,
-      .cur = 0,
-      .next = 0,
-      .last_symbol = null,
-      .last_literal = null,
-      .cached = null
-    };
+    return Lexer{ .buffer = buffer };
   }
 
   pub fn symbol(self: Lexer) ?[]const u8 { return self.last_symbol; }
