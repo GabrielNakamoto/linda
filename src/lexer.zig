@@ -40,18 +40,7 @@ pub const Lexer  = struct {
 
   pub const Token = common.Pair(TokenKind, ?Literal);
 
-
-  pub const Literal = union(enum) {
-    int: i32, float: f32, string: []const u8,
-
-    pub fn print(self: Literal) void {
-      switch(self) {
-        .int => |val| std.debug.print("int literal: {}\n", .{val}),
-        .float => |val| std.debug.print("float literal: {}\n", .{val}),
-        .string => |val| std.debug.print("string literal: {s}\n", .{val}),
-      }
-    }
-  };
+  pub const Literal = union(enum) { int: i32, float: f32, string: []const u8 };
 
   pub fn init(buffer: []const u8) Lexer {
     return Lexer{ .buffer = buffer, .tokens = common.ListType(Token).init() };
@@ -114,15 +103,10 @@ pub const Lexer  = struct {
       if (self.next == self.buffer.len) break;
 
       if (TokenKind.simple(self.buffer[self.next])) |kind| {
-        std.debug.print("got token: {s}\n", .{@tagName(kind)});
         try self.tokens.insert(Token.init(kind, null));
         self.next += 1;
       } else if (self.complex_tok()) |tok| {
         if (!ignore_comments or tok.a != .Comment) {
-          std.debug.print("got token: {s}\n", .{@tagName(tok.a)});
-          if (tok.b) |lit| {
-            lit.print();
-          }
           try self.tokens.insert(tok);
         }
       } else {
@@ -135,8 +119,6 @@ pub const Lexer  = struct {
   }
 };
 
-
-
 // ****** Testing Code *****
 test "test lex simple program" {
   const io = std.testing.io;
@@ -146,82 +128,91 @@ test "test lex simple program" {
   const buf = try dir.readFileAlloc(io, "examples/simple.lda", gpa, .unlimited);
   defer gpa.free(buf);
 
-  std.debug.print("src program: {s}\n", .{buf});
+  std.debug.print("Source program: {s}\n", .{buf});
 
-  const expected_toks = [_]Lexer.TokenKind {
-    .Symbol, .Symbol, .LBrack, .Symbol, .Comma, .Symbol, .Comma, .Symbol, .RBrack, .LBrace,
-    .Symbol, .LBrack, .Symbol, .RBrack,
-    .Symbol, .Assign, .LBrack, .Symbol, .Mmul, .Symbol, .RBrack, .Call, .Symbol, .LBrack, .RBrack, .Endl, .Comment,
-    .Symbol, .Assign, .Symbol, .Div, .LBrack, .Symbol, .Call, .Symbol, .LBrack, .RBrack, .Add, .Symbol, .Call, .Symbol, .LBrack, .RBrack, .RBrack, .Endl,
-    .RBrace, .Symbol, .LBrace,
-    .Symbol, .Symbol, .Add, .Literal, .Endl,
-    .RBrace,
-    .Symbol, .LBrack, .Symbol, .Mul, .LBrack, .Symbol, .Sub, .Literal, .RBrack, .RBrack, .Call, .Symbol, .LBrack, .Literal, .Comma, .Literal, .RBrack, .Endl, .Comment,
-    .RBrace,
-    .Symbol, .Symbol, .LBrace,
-    .Symbol, .Assign, .Symbol, .Tensor, .Symbol, .LSbrack, .Literal, .Comma, .Literal, .RSbrack, .Endl,
-    .Symbol, .Assign, .Symbol, .Tensor, .Symbol, .LSbrack, .Literal, .Comma, .Literal, .RSbrack, .Endl,
-    .Symbol, .Assign, .Symbol, .Tensor, .Symbol, .LSbrack, .Literal, .Comma, .Literal, .Comma, .Literal, .Comma, .Literal, .RSbrack, .Endl,
-    .Symbol, .Assign, .Symbol, .Mmul, .Symbol, .Endl, .Comment,
-    .Symbol, .Assign, .Symbol, .LBrack, .Symbol, .Comma, .Symbol, .RBrack, .Call, .Symbol, .LBrack, .RBrack, .Endl,
-    .Symbol, .Call, .Symbol, .LBrack, .RBrack, .Endl,
-    .RBrace,
-    .Eof,
-  };
-
-  const expected_symbols = [_][] const u8 {
-    "fn", "attn", "x", "q", "v",
-    "if", "foo",
-    "foo", "q", "v", "T",
-    "z", "foo", "v", "exp", "q", "sqrt",
-    "fi",
-    "yield", "x",
-    "yield", "z", "q", "R",
-    "fn", "main",
-    "x", "T", "i32",
-    "y", "T", "f32",
-    "z", "T", "f8",
-    "foo", "x", "y",
-    "z", "attn", "x", "y", "relu",
-    "z", "print",
-  };
-
-  const expected_literals = [_] Lexer.Literal {
-    .{ .float = 27.0 },
-    .{ .int = 3 }, .{ .int = 64 }, .{ .int = 32 },
-    .{ .int = 64 }, .{ .int = 128 },
-    .{ .int = 128 }, .{ .int = 256 },
-    .{ .int = 10 }, .{ .int = 20000 }, .{ .int = 39 }, .{ .int = 4 },
+  const Token = Lexer.Token;
+  const expected_tokens = [_] Token {
+    Token.init(.Symbol, .{ .string = "fn" }), Token.init(.Symbol, .{ .string = "attn" }), Token.init(.LBrack, null), Token.init(.Symbol, .{ .string = "x" }),
+    Token.init(.Comma, null), Token.init(.Symbol, .{ .string = "q" }), Token.init(.Comma, null), Token.init(.Symbol, .{ .string = "v" }),
+    Token.init(.RBrack, null), Token.init(.LBrace, null),
+    Token.init(.Symbol, .{ .string = "if" }), Token.init(.LBrack, null), Token.init(.Symbol, .{ .string = "foo" }), Token.init(.RBrack, null),
+    Token.init(.Symbol, .{ .string = "foo" }), Token.init(.Assign, null), Token.init(.LBrack, null), Token.init(.Symbol, .{ .string = "q" }),
+    Token.init(.Mmul, null), Token.init(.Symbol, .{ .string = "v" }), Token.init(.RBrack, null), Token.init(.Call, null),
+    Token.init(.Symbol, .{ .string = "T" }), Token.init(.LBrack, null), Token.init(.RBrack, null), Token.init(.Endl, null),
+    Token.init(.Comment, null),
+    Token.init(.Symbol, .{ .string = "z" }), Token.init(.Assign, null), Token.init(.Symbol, .{ .string = "foo" }), Token.init(.Div, null),
+    Token.init(.LBrack, null), Token.init(.Symbol, .{ .string = "v" }), Token.init(.Call, null), Token.init(.Symbol, .{ .string = "exp" }),
+    Token.init(.LBrack, null), Token.init(.RBrack, null), Token.init(.Add, null), Token.init(.Symbol, .{ .string = "q" }),
+    Token.init(.Call, null), Token.init(.Symbol, .{ .string = "sqrt" }), Token.init(.LBrack, null), Token.init(.RBrack, null),
+    Token.init(.RBrack, null), Token.init(.Endl, null),
+    Token.init(.RBrace, null), Token.init(.Symbol, .{ .string = "fi" }), Token.init(.LBrace, null),
+    Token.init(.Symbol, .{ .string = "yield" }), Token.init(.Symbol, .{ .string = "x" }), Token.init(.Add, null), Token.init(.Literal, .{ .float = 27.0 }),
+    Token.init(.Endl, null),
+    Token.init(.RBrace, null),
+    Token.init(.Symbol, .{ .string = "yield" }), Token.init(.LBrack, null), Token.init(.Symbol, .{ .string = "z" }), Token.init(.Mul, null),
+    Token.init(.LBrack, null), Token.init(.Symbol, .{ .string = "q" }), Token.init(.Sub, null), Token.init(.Literal, .{ .int = 3 }),
+    Token.init(.RBrack, null), Token.init(.RBrack, null), Token.init(.Call, null), Token.init(.Symbol, .{ .string = "R" }),
+    Token.init(.LBrack, null), Token.init(.Literal, .{ .int = 64 }), Token.init(.Comma, null), Token.init(.Literal, .{ .int = 32 }),
+    Token.init(.RBrack, null), Token.init(.Endl, null), Token.init(.Comment, null),
+    Token.init(.RBrace, null),
+    Token.init(.Symbol, .{ .string = "fn" }), Token.init(.Symbol, .{ .string = "main" }), Token.init(.LBrace, null),
+    Token.init(.Symbol, .{ .string = "x" }), Token.init(.Assign, null), Token.init(.Symbol, .{ .string = "T" }), Token.init(.Tensor, null),
+    Token.init(.Symbol, .{ .string = "i32" }), Token.init(.LSbrack, null), Token.init(.Literal, .{ .int = 64 }), Token.init(.Comma, null),
+    Token.init(.Literal, .{ .int = 128 }), Token.init(.RSbrack, null), Token.init(.Endl, null),
+    Token.init(.Symbol, .{ .string = "y" }), Token.init(.Assign, null), Token.init(.Symbol, .{ .string = "T" }), Token.init(.Tensor, null),
+    Token.init(.Symbol, .{ .string = "f32" }), Token.init(.LSbrack, null), Token.init(.Literal, .{ .int = 128 }), Token.init(.Comma, null),
+    Token.init(.Literal, .{ .int = 256 }), Token.init(.RSbrack, null), Token.init(.Endl, null),
+    Token.init(.Symbol, .{ .string = "z" }), Token.init(.Assign, null), Token.init(.Symbol, .{ .string = "T" }), Token.init(.Tensor, null),
+    Token.init(.Symbol, .{ .string = "f8" }), Token.init(.LSbrack, null), Token.init(.Literal, .{ .int = 10 }), Token.init(.Comma, null),
+    Token.init(.Literal, .{ .int = 20000 }), Token.init(.Comma, null), Token.init(.Literal, .{ .int = 39 }), Token.init(.Comma, null),
+    Token.init(.Literal, .{ .int = 4 }), Token.init(.RSbrack, null), Token.init(.Endl, null),
+    Token.init(.Symbol, .{ .string = "foo" }), Token.init(.Assign, null), Token.init(.Symbol, .{ .string = "x" }), Token.init(.Mmul, null),
+    Token.init(.Symbol, .{ .string = "y" }), Token.init(.Endl, null), Token.init(.Comment, null),
+    Token.init(.Symbol, .{ .string = "z" }), Token.init(.Assign, null), Token.init(.Symbol, .{ .string = "attn" }), Token.init(.LBrack, null),
+    Token.init(.Symbol, .{ .string = "x" }), Token.init(.Comma, null), Token.init(.Symbol, .{ .string = "y" }), Token.init(.RBrack, null),
+    Token.init(.Call, null), Token.init(.Symbol, .{ .string = "relu" }), Token.init(.LBrack, null), Token.init(.RBrack, null),
+    Token.init(.Endl, null),
+    Token.init(.Symbol, .{ .string = "z" }), Token.init(.Call, null), Token.init(.Symbol, .{ .string = "print" }), Token.init(.LBrack, null),
+    Token.init(.RBrack, null), Token.init(.Endl, null),
+    Token.init(.RBrace, null),
+    Token.init(.Eof, null),
   };
 
   var lexer = Lexer.init(buf);
   defer lexer.deinit();
   try lexer.tokenize(false);
 
-  var i: usize = 0;
-  var s: usize = 0;
-  var l: usize = 0;
+  for (expected_tokens, 0..) |valid, i| {
+    const tok = lexer.peek(0) orelse return error.TestExpectedEqual;
 
-  while (lexer.peek(0)) |tok| : (lexer.consume()) {
-    std.debug.print("Token {d}: {s}\n", .{i, @tagName(tok.a)});
-
+    std.debug.print("[{d}]: {s}\t", .{i, @tagName(tok.a)});
     if (tok.b) |lit| {
-      lit.print();
       switch (lit) {
-        .string => |sym| {
-          try std.testing.expectEqualStrings(sym, expected_symbols[s]);
-          s += 1;
-        },
-        else => {
-          try std.testing.expectEqual(lit, expected_literals[l]);
-          l += 1;
-        }
+        .string => |val| std.debug.print("{s}", .{val}),
+        .int => |val| std.debug.print("{}", .{val}),
+        .float => |val| std.debug.print("{}", .{val}),
       }
     }
+    std.debug.print("\n", .{});
 
-    try std.testing.expectEqual(tok.a, expected_toks[i]);
-    i += 1;
+    try expectTokenEqual(valid, tok);
 
     if (tok.a == .Eof) break;
+    lexer.consume();
+  }
+}
+
+fn expectTokenEqual(expected: Lexer.Token, actual: Lexer.Token) !void {
+  try std.testing.expectEqual(expected.a, actual.a);
+
+  if (expected.b) |expected_lit| {
+    const actual_lit = actual.b orelse return error.TestExpectedEqual;
+    try std.testing.expectEqual(std.meta.activeTag(expected_lit), std.meta.activeTag(actual_lit));
+    switch (actual_lit) {
+      .string => |sym| try std.testing.expectEqualStrings(expected_lit.string, sym),
+      else => try std.testing.expectEqual(expected_lit, actual_lit),
+    }
+  } else {
+    try std.testing.expect(actual.b == null);
   }
 }
