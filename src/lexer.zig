@@ -1,5 +1,7 @@
 const std = @import("std");
 
+// lex entire input buffer in single pass, caching the tokens so its easy
+// to arbitrarily look ahead in stream and inrement ptr
 pub const Lexer  = struct {
   buffer: []const u8,
   cur: usize = 0,
@@ -16,19 +18,12 @@ pub const Lexer  = struct {
     Tensor, Assign,
     Literal, Symbol,
     Comma, Call,
-    Comment,
-    Endl,
-    Eof,
+    Comment, Endl, Eof,
   };
 
-  pub const Literal = union(enum) {
-    int: i32,
-    float: f32
-  };
+  pub const Literal = union(enum) { int: i32, float: f32 };
 
-  pub fn init(buffer: []const u8) Lexer {
-    return Lexer{ .buffer = buffer };
-  }
+  pub fn init(buffer: []const u8) Lexer { return Lexer{ .buffer = buffer }; }
 
   pub fn symbol(self: Lexer) ?[]const u8 { return self.last_symbol; }
   pub fn literal(self: Lexer) ?Literal { return self.last_literal; }
@@ -39,13 +34,13 @@ pub const Lexer  = struct {
     self.cached = null;
   }
 
-  pub fn readSymbol(self: *Lexer) []const u8 {
+  fn readSymbol(self: *Lexer) []const u8 {
     const start: usize = self.next;
     while (std.ascii.isAlphanumeric(self.buffer[self.next])) : (self.next += 1) {}
     return self.buffer[start..self.next];
   }
 
-  pub fn readLiteral(self: *Lexer) ?Literal {
+  fn readLiteral(self: *Lexer) ?Literal {
     var is_float = false;
     const start = self.next;
     while (std.ascii.isDigit(self.buffer[self.next]) or self.buffer[self.next] == '.') : (self.next += 1) {

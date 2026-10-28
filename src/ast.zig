@@ -1,22 +1,5 @@
 const std = @import("std");
-
-fn ListType(comptime T: type) type {
-  return struct {
-    const Self = @This();
-
-    buffer: std.ArrayList(T) = .empty,
-    gpa: std.heap.DebugAllocator(.{}),
-
-    pub fn init() Self { return .{ .gpa = std.heap.DebugAllocator(.{}){} }; }
-    pub fn slice(self: *const Self) []const T { return self.buffer.items; }
-    pub fn insert(self: *Self, item: T) std.mem.Allocator.Error!void {
-      return self.buffer.append(self.gpa.allocator(), item);
-    }
-    pub fn deinit(self: *Self) void {
-      self.buffer.deinit(self.gpa.allocator());
-    }
-  };
-}
+const ListType = @import("common.zig").ListType;
 
 pub const Literal = union(enum) { string: []const u8, float: f32, int: i32, };
 pub const ExprOrLit = union(enum) { expr: *const Expr, lit: Literal };
@@ -122,9 +105,9 @@ test "test ast" {
 
   var body = ListType(BlockExpr).init();
   defer body.deinit();
-  try body.insert(.{ .decl = decl });
-  try body.insert(.{ .expr = &call});
-  try body.insert(.{ .expr = &yield});
+  try body.insert(BlockExpr{ .decl = decl });
+  try body.insert(BlockExpr{ .expr = &call});
+  try body.insert(BlockExpr{ .expr = &yield});
 
   const main = Func.init("main", ListType([]const u8).init(), body);
   std.debug.print("{}\n", .{body.slice()[0]});
