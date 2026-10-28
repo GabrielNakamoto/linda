@@ -15,3 +15,14 @@ pub fn ListType(comptime T: type) type {
     }
   };
 }
+
+pub fn Pair(comptime A: type, comptime B: type) type {
+  return struct {
+    a: A,
+    b: B,
+
+    const Self = @This();
+
+    pub fn init(a: A, b: B) Self { return .{ .a = a, .b = b }; }
+  };
+}

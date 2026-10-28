@@ -1,16 +1,19 @@
 const std = @import("std");
+const common = @import("common.zig");
 
 // lex entire input buffer in single pass, caching the tokens so its easy
-// to arbitrarily look ahead in stream and inrement ptr
+// to arbitrarily look ahead in stream and increment ptr
 pub const Lexer  = struct {
   buffer: []const u8,
-  cur: usize = 0,
+  tokens: common.ListType(Token),
   next: usize = 0,
-  last_symbol: ?[]const u8 = null,
-  last_literal: ?Literal = null,
-  cached: ?Token = null,
 
-  pub const Token = enum {
+  pub const LexerError = error{
+    UnexpectedEof,
+    SyntaxError
+  };
+
+  pub const TokenKind = enum {
     LBrace, RBrace,
     LBrack, RBrack,
     LSbrack, RSbrack,
@@ -19,25 +22,59 @@ pub const Lexer  = struct {
     Literal, Symbol,
     Comma, Call,
     Comment, Endl, Eof,
+
+    pub fn simple(char: u8) ?TokenKind {
+      return switch (char) {
+        '(' => .LBrack, ')' => .RBrack,
+        '{' => .LBrace, '}' => .RBrace,
+        '[' => .LSbrack, ']' => .RSbrack,
+        ';' => .Endl,
+        '+' => .Add, '-' => .Sub,
+        '/' => .Div, '*' => .Mul,
+        '@' => .Mmul, ',' => .Comma,
+        '.' => .Call, '=' => .Assign,
+        else => null
+      };
+    }
   };
 
-  pub const Literal = union(enum) { int: i32, float: f32 };
+  pub const Token = common.Pair(TokenKind, ?Literal);
 
-  pub fn init(buffer: []const u8) Lexer { return Lexer{ .buffer = buffer }; }
 
-  pub fn symbol(self: Lexer) ?[]const u8 { return self.last_symbol; }
-  pub fn literal(self: Lexer) ?Literal { return self.last_literal; }
+  pub const Literal = union(enum) {
+    int: i32, float: f32, string: []const u8,
 
-  pub fn consume(self: *Lexer) void {
-    std.debug.assert(self.next > self.cur);
-    self.cur = self.next;
-    self.cached = null;
+    pub fn print(self: Literal) void {
+      switch(self) {
+        .int => |val| std.debug.print("int literal: {}\n", .{val}),
+        .float => |val| std.debug.print("float literal: {}\n", .{val}),
+        .string => |val| std.debug.print("string literal: {s}\n", .{val}),
+      }
+    }
+  };
+
+  pub fn init(buffer: []const u8) Lexer {
+    return Lexer{ .buffer = buffer, .tokens = common.ListType(Token).init() };
   }
 
-  fn readSymbol(self: *Lexer) []const u8 {
+  pub fn deinit(self: *Lexer) void {
+    self.tokens.deinit();
+  }
+
+  pub fn consume(self: *Lexer) void {
+    std.debug.assert(self.next + 1 < self.tokens.slice().len);
+    self.next += 1;
+  }
+
+  pub fn peek(self: *Lexer, i: u32) ?Token {
+    std.debug.assert(self.next + i < self.tokens.slice().len);
+    return self.tokens.slice()[self.next + i];
+  }
+
+  fn readSymbol(self: *Lexer) Literal {
     const start: usize = self.next;
     while (std.ascii.isAlphanumeric(self.buffer[self.next])) : (self.next += 1) {}
-    return self.buffer[start..self.next];
+    return .{ .string = self.buffer[start..self.next]};
   }
 
   fn readLiteral(self: *Lexer) ?Literal {
@@ -54,63 +91,49 @@ pub const Lexer  = struct {
     }
   }
 
-  pub fn peek(self: *Lexer) ?Token {
-    if (self.cached) |tk| return tk;
-    self.next = self.cur;
-
-    while (self.next < self.buffer.len and std.ascii.isWhitespace(self.buffer[self.next])) : (self.next += 1) {}
-    if (self.next == self.buffer.len) return .Eof;
-
-    const simple_tok: ?Token = switch (self.buffer[self.next]) {
-      '(' => .LBrack, ')' => .RBrack,
-      '{' => .LBrace, '}' => .RBrace,
-      '[' => .LSbrack, ']' => .RSbrack,
-      ';' => .Endl,
-      '+' => .Add, '-' => .Sub,
-      '/' => .Div, '*' => .Mul,
-      '@' => .Mmul, ',' => .Comma,
-      '.' => .Call, '=' => .Assign,
-      else => null
-    };
-
-    if (simple_tok) |tk| {
-      self.next += 1;
-      self.cached = tk;
-      return tk;
-    }
-
-    const final_tok: ?Token = switch (self.buffer[self.next]) {
+  fn complex_tok(self: *Lexer) ?Token {
+    return switch (self.buffer[self.next]) {
       '#' => blk: {
         while (self.next < self.buffer.len and self.buffer[self.next] != '\n') : (self.next += 1) {}
-        break :blk .Comment;
+        break :blk Token.init(.Comment, null);
       },
       ':' => blk: {
-        std.debug.assert(self.buffer.len > self.next+1);
-        std.debug.assert(self.buffer[self.next+1] == ':');
+        std.debug.assert(self.buffer.len > self.next+1 and self.buffer[self.next+1] == ':');
         self.next += 2;
-        break :blk .Tensor;
+        break :blk Token.init(.Tensor, null);
       },
-      '0'...'9' => blk: {
-        self.last_literal = self.readLiteral();
-        break :blk .Literal;
-      },
-      'a'...'z', 'A'...'Z', '_' => blk: {
-        self.last_symbol = self.readSymbol();
-        break :blk .Symbol;
-      },
+      'a'...'z', 'A'...'Z' => Token.init(.Symbol, self.readSymbol()),
+      '0'...'9' => Token.init(.Literal, self.readLiteral()),
       else => null
     };
+  }
 
-    if (final_tok) |tk| {
-      self.cached = tk;
-    } else {
-      std.debug.print("WARNING: cannot tokenize: {c}\n", .{self.buffer[self.next]});
+  pub fn tokenize(self: *Lexer, ignore_comments: bool) !void {
+    while (self.next < self.buffer.len) {
+      while (self.next < self.buffer.len and std.ascii.isWhitespace(self.buffer[self.next])) : (self.next += 1) {}
+      if (self.next == self.buffer.len) break;
+
+      if (TokenKind.simple(self.buffer[self.next])) |kind| {
+        std.debug.print("got token: {s}\n", .{@tagName(kind)});
+        try self.tokens.insert(Token.init(kind, null));
+        self.next += 1;
+      } else if (self.complex_tok()) |tok| {
+        if (!ignore_comments or tok.a != .Comment) {
+          std.debug.print("got token: {s}\n", .{@tagName(tok.a)});
+          if (tok.b) |lit| {
+            lit.print();
+          }
+          try self.tokens.insert(tok);
+        }
+      } else {
+        std.debug.print("Syntax error while tokenizing src: {c}\n", .{self.buffer[self.next]});
+        return LexerError.SyntaxError;
+      }
     }
-    return final_tok;
+    try self.tokens.insert(Token.init(.Eof, null));
+    self.next = 0;
   }
 };
-
-
 
 
 
@@ -125,24 +148,25 @@ test "test lex simple program" {
 
   std.debug.print("src program: {s}\n", .{buf});
 
-  const expected_toks = [_]Lexer.Token {
-    .Symbol, .Symbol, .LBrack, .Symbol, .Comma, .Symbol, .Comma, .Symbol, .RBrack, .LBrace, // fn attn (x, q, v) {
-    .Symbol, .LBrack, .Symbol, .RBrack,                            // if (foo)
-    .Symbol, .Assign, .LBrack, .Symbol, .Mmul, .Symbol, .RBrack, .Call, .Symbol, .LBrack, .RBrack, .Endl, .Comment, // foo = (q @ v).T() # transpose
-    .Symbol, .Assign, .Symbol, .Div, .LBrack, .Symbol, .Call, .Symbol, .LBrack, .RBrack, .Add, .Symbol, .Call, .Symbol, .LBrack, .RBrack, .RBrack, .Endl, // z = foo / (v.exp() + q.sqrt())
-    .RBrace, .Symbol, .LBrace,                                     // } fi {
-    .Symbol, .Symbol, .Add, .Literal, .Endl,                              // yield x + 27.0
-    .RBrace,                                                       // }
-    .Symbol, .LBrack, .Symbol, .Mul, .LBrack, .Symbol, .Sub, .Literal, .RBrack, .RBrack, .Call, .Symbol, .LBrack, .Literal, .Comma, .Literal, .RBrack, .Endl, .Comment, // yield (z * (q - 3)).R(64,32) # reshape
-    .RBrace,                                                       // }
-    .Symbol, .Symbol, .LBrace,                                     // fn main {
-    .Symbol, .Assign, .Symbol, .Tensor, .Symbol, .LSbrack, .Literal, .Comma, .Literal, .RSbrack, .Endl, // x := T::i32[64,128]
-    .Symbol, .Assign, .Symbol, .Tensor, .Symbol, .LSbrack, .Literal, .Comma, .Literal, .RSbrack, .Endl, // y := T::f32[128, 256]
-    .Symbol, .Assign, .Symbol, .Tensor, .Symbol, .LSbrack, .Literal, .Comma, .Literal, .Comma, .Literal, .Comma, .Literal, .RSbrack, .Endl, // z := T::f8[10, 20000, 39, 4]
-    .Symbol, .Assign, .Symbol, .Mmul, .Symbol, .Endl, .Comment,           // foo = x @ y # 64,256
-    .Symbol, .Assign, .Symbol, .LBrack, .Symbol, .Comma, .Symbol, .RBrack, .Call, .Symbol, .LBrack, .RBrack, .Endl, // z = attn(x,y).relu()
-    .Symbol, .Call, .Symbol, .LBrack, .RBrack, .Endl,                     // z.print()
-    .RBrace,                                                       // }
+  const expected_toks = [_]Lexer.TokenKind {
+    .Symbol, .Symbol, .LBrack, .Symbol, .Comma, .Symbol, .Comma, .Symbol, .RBrack, .LBrace,
+    .Symbol, .LBrack, .Symbol, .RBrack,
+    .Symbol, .Assign, .LBrack, .Symbol, .Mmul, .Symbol, .RBrack, .Call, .Symbol, .LBrack, .RBrack, .Endl, .Comment,
+    .Symbol, .Assign, .Symbol, .Div, .LBrack, .Symbol, .Call, .Symbol, .LBrack, .RBrack, .Add, .Symbol, .Call, .Symbol, .LBrack, .RBrack, .RBrack, .Endl,
+    .RBrace, .Symbol, .LBrace,
+    .Symbol, .Symbol, .Add, .Literal, .Endl,
+    .RBrace,
+    .Symbol, .LBrack, .Symbol, .Mul, .LBrack, .Symbol, .Sub, .Literal, .RBrack, .RBrack, .Call, .Symbol, .LBrack, .Literal, .Comma, .Literal, .RBrack, .Endl, .Comment,
+    .RBrace,
+    .Symbol, .Symbol, .LBrace,
+    .Symbol, .Assign, .Symbol, .Tensor, .Symbol, .LSbrack, .Literal, .Comma, .Literal, .RSbrack, .Endl,
+    .Symbol, .Assign, .Symbol, .Tensor, .Symbol, .LSbrack, .Literal, .Comma, .Literal, .RSbrack, .Endl,
+    .Symbol, .Assign, .Symbol, .Tensor, .Symbol, .LSbrack, .Literal, .Comma, .Literal, .Comma, .Literal, .Comma, .Literal, .RSbrack, .Endl,
+    .Symbol, .Assign, .Symbol, .Mmul, .Symbol, .Endl, .Comment,
+    .Symbol, .Assign, .Symbol, .LBrack, .Symbol, .Comma, .Symbol, .RBrack, .Call, .Symbol, .LBrack, .RBrack, .Endl,
+    .Symbol, .Call, .Symbol, .LBrack, .RBrack, .Endl,
+    .RBrace,
+    .Eof,
   };
 
   const expected_symbols = [_][] const u8 {
@@ -171,37 +195,33 @@ test "test lex simple program" {
   };
 
   var lexer = Lexer.init(buf);
-  var tok = lexer.peek();
+  defer lexer.deinit();
+  try lexer.tokenize(false);
+
   var i: usize = 0;
   var s: usize = 0;
   var l: usize = 0;
 
-  while (tok != .Eof) : (tok = lexer.peek()) {
-    try std.testing.expect(tok != null);
+  while (lexer.peek(0)) |tok| : (lexer.consume()) {
+    std.debug.print("Token {d}: {s}\n", .{i, @tagName(tok.a)});
 
-    switch (tok.?) {
-      .Symbol => {
-        const sym = lexer.symbol().?;
-        std.debug.print("Symbol string: {s}\n", .{sym});
-        try std.testing.expectEqualStrings(sym, expected_symbols[s]);
-        s += 1;
-      },
-      .Literal => {
-        const lit = lexer.literal().?;
-        switch (lit) {
-          .int => |val| std.debug.print("Int literal: {}\n", .{val}),
-          .float => |val| std.debug.print("Float literal: {}\n", .{val}),
+    if (tok.b) |lit| {
+      lit.print();
+      switch (lit) {
+        .string => |sym| {
+          try std.testing.expectEqualStrings(sym, expected_symbols[s]);
+          s += 1;
+        },
+        else => {
+          try std.testing.expectEqual(lit, expected_literals[l]);
+          l += 1;
         }
-        try std.testing.expectEqual(lit, expected_literals[l]);
-        l += 1;
-      },
-      else => {
-        std.debug.print("Token {d}: {s}\n", .{i, @tagName(tok.?)});
       }
     }
 
-    try std.testing.expectEqual(tok, expected_toks[i]);
+    try std.testing.expectEqual(tok.a, expected_toks[i]);
     i += 1;
-    lexer.consume();
+
+    if (tok.a == .Eof) break;
   }
 }
