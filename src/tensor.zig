@@ -1,9 +1,6 @@
 const std = @import("std");
 const mlir = @import("mlir");
 
-// look into linalg dialect, what high level ops do we need and which ones can be
-// matched later: https://mlir.llvm.org/docs/Dialects/Linalg/
-// RISC vs CISC
 pub const IROp = enum {
   Ecce,
   Add,
@@ -13,29 +10,27 @@ pub const IROp = enum {
   Dot,
 };
 
+pub const TensorCtx = struct {
+  arena: std.heap.ArenaAllocator,
+
+  pub fn init(backing: std.mem.Allocator) TensorCtx {
+    return .{ .arena = std.heap.ArenaAllocator.init(backing) };
+  }
+
+  pub fn deinit(self: *TensorCtx) void { self.arena.deinit(); }
+};
+
 fn numel(shape: []const u32) u32 {
   var n: u32 = 1;
   for (shape) |dim| n *= dim;
   return n;
 }
 
-// peephole optimizations, equivalence sasturation? affine transformations
-// TODO: arena allocator? automatically free all tensors when inference/application is over
-
-// what is codegen going to look like?
-// IROp should translate directly to MLIR operations I assume?
-// - look at IREE/XLA/ZML?
-// - also toy tutorial
-// : we define custom dialect, emit MLIR regions etc...??
-
-// - static shape analysis/inference
-// - IR enum maps directly on to custom dialect
-// - iterative transformations over dialect as we lower it down to affine and then LLVM codegen
-
-// how should codegen work?
-// we call render on the sink Tensor node, walk the DAG and emit as Mlir codegen?
-// but we need to do linearization then....., now I see why the tutorial used a traditional frontend
-// actually we are find just use toposort, no control flo
+pub const AnyTensor = union(enum) {
+  float32: Tensor(f32),
+  uint: Tensor(u32),
+  sint: Tensor(i32)
+};
 
 pub fn Tensor(comptime T: type) type {
   return struct {
@@ -87,19 +82,6 @@ pub fn Tensor(comptime T: type) type {
     //}
   };
 }
-
-pub const TensorCtx = struct {
-  arena: std.heap.ArenaAllocator,
-
-  pub fn init(backing: std.mem.Allocator) TensorCtx {
-    return .{ .arena = std.heap.ArenaAllocator.init(backing) };
-  }
-
-  pub fn deinit(self: *TensorCtx) void {
-    self.arena.deinit();
-  }
-};
-
 
 test "test tensor" {
   var gpa = std.heap.DebugAllocator(.{}).init;
