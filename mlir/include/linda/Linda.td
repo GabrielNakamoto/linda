@@ -36,7 +36,7 @@ def AddOp : LindaOp<"add"> {
   let assemblyFormat = "$lhs `:` type($lhs) `,` $rhs `:` type($rhs) attr-dict `:` type($res)";
 
   let builders = [
-    OpBuilder<(ins "Value":$lhs, "Value":$rhs)>
+    OpBuilder<(ins "mlir::Value":$lhs, "mlir::Value":$rhs)>
   ];
 }
 
@@ -49,7 +49,7 @@ def MulOp : LindaOp<"mul"> {
   let assemblyFormat = "$lhs `:` type($lhs) `,` $rhs `:` type($rhs) attr-dict `:` type($res)";
 
   let builders = [
-    OpBuilder<(ins "Value":$lhs, "Value":$rhs)>
+    OpBuilder<(ins "mlir::Value":$lhs, "mlir::Value":$rhs)>
   ];
 }
 
@@ -62,7 +62,7 @@ def ReshapeOp : LindaOp<"reshape"> {
   let assemblyFormat = "$value `:` type($value) attr-dict `:` type($res)";
 
   let builders = [
-    OpBuilder<(ins "Value":$value)>
+    OpBuilder<(ins "mlir::Value":$value)>
   ];
 }
 

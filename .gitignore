@@ -10,3 +10,5 @@ compile_commands.json
 CTestTestfile.cmake
 Testing/
 tablegen_compile_commands.yml
+*.inc
+lib/

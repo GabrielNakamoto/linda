@@ -40,6 +40,12 @@ pub fn build(b: *std.Build) void {
     exe.root_module.linkSystemLibrary("MLIR", .{ .preferred_link_mode = .dynamic });
     exe.root_module.linkSystemLibrary("LLVM", .{ .preferred_link_mode = .dynamic });
 
+    // custom mlir dialect
+    exe.root_module.addIncludePath(b.path("mlir/include"));
+    exe.root_module.addObjectFile(
+      b.path("mlir/lib/libMLIRLinda.a"),
+    );
+
     b.installArtifact(exe);
 
     const run_step = b.step("run", "Run the app");
