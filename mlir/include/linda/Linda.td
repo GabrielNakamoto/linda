@@ -31,7 +31,9 @@ def AddOp : LindaOp<"add"> {
   let summary = [{elementwise addition with broadcasting}];
 
   let arguments = (ins F32Tensor:$lhs, F32Tensor:$rhs);
-  let results = (outs F32Tensor);
+  let results = (outs F32Tensor:$res);
+
+  let assemblyFormat = "$lhs `:` type($lhs) `,` $rhs `:` type($rhs) attr-dict `:` type($res)";
 
   let builders = [
     OpBuilder<(ins "Value":$lhs, "Value":$rhs)>
@@ -42,7 +44,9 @@ def MulOp : LindaOp<"mul"> {
   let summary = [{elementwise multiplication with broadcasting}];
 
   let arguments = (ins F32Tensor:$lhs, F32Tensor:$rhs);
-  let results = (outs F32Tensor);
+  let results = (outs F32Tensor:$res);
+
+  let assemblyFormat = "$lhs `:` type($lhs) `,` $rhs `:` type($rhs) attr-dict `:` type($res)";
 
   let builders = [
     OpBuilder<(ins "Value":$lhs, "Value":$rhs)>
@@ -53,7 +57,9 @@ def ReshapeOp : LindaOp<"reshape"> {
   let summary = [{}];
 
   let arguments = (ins F32Tensor:$value);
-  let results = (outs F32Tensor);
+  let results = (outs F32Tensor:$res);
+
+  let assemblyFormat = "$value `:` type($value) attr-dict `:` type($res)";
 
   let builders = [
     OpBuilder<(ins "Value":$value)>

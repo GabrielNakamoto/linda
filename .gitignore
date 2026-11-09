@@ -1,2 +1,12 @@
 .zig-cache/
 zig-out/
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+Testing/
+tablegen_compile_commands.yml
