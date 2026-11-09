@@ -2,7 +2,7 @@ const std = @import("std");
 const mlir = @import("mlir.zig");
 
 pub const IROp = enum {
-  Ecce,
+  Create,
   Add, Mul,
   Reshape, Transpose,
   Dot,
@@ -79,7 +79,7 @@ pub fn Tensor(comptime T: type) type {
       @memset(data, 1.0);
 
       const node = try ctx.arena.allocator().create(Node);
-      node.* = .{ .op = IROp.Ecce, .shape = new_shape, .data = std.mem.sliceAsBytes(data), .dtype = dtypeOf(T) };
+      node.* = .{ .op = IROp.Create, .shape = new_shape, .data = std.mem.sliceAsBytes(data), .dtype = dtypeOf(T) };
       return .{ .node = node, .ctx = ctx };
     }
 

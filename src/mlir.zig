@@ -7,10 +7,6 @@ const c = @cImport({
   @cInclude("linda-c/Dialect.h");
 });
 
-fn getOpState(name: [*c]const u8, loc: c.MlirLocation) c.MlirOperationState {
-  return c.mlirOperationStateGet(c.mlirStringRefCreateFromCString(name), loc);
-}
-
 fn dtypeToMlirType(ctx: c.MlirContext, dtype: tensor.DType) !c.MlirType {
   return switch (dtype) {
     .f32 => c.mlirF32TypeGet(ctx),
@@ -21,7 +17,8 @@ fn dtypeToMlirType(ctx: c.MlirContext, dtype: tensor.DType) !c.MlirType {
 
 pub const MLIRGenerator = struct {
   ctx: c.MlirContext,
-  allocator: std.mem.Allocator,
+  gpa: std.mem.Allocator,
+  symbol_table: std.AutoHashMap(*const tensor.Node, c.MlirOperation),
 
   const Self = @This();
 
@@ -39,45 +36,50 @@ pub const MLIRGenerator = struct {
     std.debug.assert(! c.mlirDialectIsNull(dialect));
     std.debug.print("succesfully loaded dialect...\n", .{});
 
-    return .{ .ctx = ctx, .allocator = allocator };
+    return .{ .ctx = ctx, .gpa = allocator, .symbol_table = .init(allocator) };
   }
 
-  pub fn tensorToMlir(self: Self, node: *const tensor.Node) !c.MlirOperation {
+  pub fn tensorToMlir(self: *Self, node: *const tensor.Node, loc: c.MlirLocation) !c.MlirOperation {
     const op_name = switch (node.op) {
+      .Create => "linda.create",
       .Add => "linda.add",
       .Mul => "linda.mul",
       else => return error.TensorIRNotInDialect
     };
-    const loc = c.mlirLocationUnknownGet(self.ctx);
-    var op_state = getOpState(op_name, loc);
+    const mlir_name = c.mlirStringRefCreateFromCString(@ptrCast(op_name));
+    var op_state = c.mlirOperationStateGet(mlir_name, loc);
 
-    var operands = try self.allocator.alloc(c.MlirType, node.inputs.len);
-    defer self.allocator.free(operands);
-
+    var operands = try self.gpa.alloc(c.MlirValue, node.inputs.len);
     for (node.inputs, 0..) |edge, i| {
-      const mlir_t = try dtypeToMlirType(self.ctx, node.dtype);
-
-      operands[i] = c.mlirRankedTensorTypeGet(
-        @intCast(edge.shape.len),
-        @ptrCast(edge.shape.ptr),
-        mlir_t,
-        c.mlirAttributeGetNull()
-      );
+      std.debug.assert(self.symbol_table.contains(edge));
+      if (self.symbol_table.get(edge)) |mval| {
+        operands[i] = c.mlirOperationGetResult(mval, 0);
+      } else {
+        return error.TopoFailure;
+      }
     }
+    c.mlirOperationStateAddOperands(@ptrCast(&op_state), @intCast(operands.len), @ptrCast(operands.ptr));
 
-    // c.mlirOperationStateAddOperands(@ptrCast(&op_state), @intCast(operands.len), @ptrCast(operands.ptr));
+    const result_t = try self.gpa.create(c.MlirType);
+    result_t.* = c.mlirRankedTensorTypeGet(
+      @intCast(node.shape.len),
+      @ptrCast(node.shape.ptr),
+      try dtypeToMlirType(self.ctx, node.dtype),
+      c.mlirAttributeGetNull()
+    );
+    c.mlirOperationStateAddResults(@ptrCast(&op_state), 1, result_t);
 
-    const op = c.mlirOperationCreate(@ptrCast(&op_state));
-    return op;
+    return c.mlirOperationCreate(@ptrCast(&op_state));
   }
 
-  pub fn compileTensorSchedule(self: Self, schedule: std.ArrayList(*const tensor.Node)) !c.MlirModule {
+  pub fn compileTensorSchedule(self: *Self, schedule: std.ArrayList(*const tensor.Node)) !c.MlirModule {
     const loc = c.mlirLocationUnknownGet(self.ctx);
     const mod = c.mlirModuleCreateEmpty(loc);
 
     for (schedule.items) |node| {
-      const mlir_op = try self.tensorToMlir(node);
-      _ = mlir_op;
+      const mlir_op = try self.tensorToMlir(node, loc);
+      try self.symbol_table.put(node, mlir_op);
+      c.mlirOperationDump(mlir_op);
     }
 
     return mod;
