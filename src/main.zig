@@ -1,38 +1,24 @@
 const std = @import("std");
-const Io = std.Io;
-const mlir = @import("mlir");
-
-const linda = @import("linda");
-const c = @cImport({
-  @cInclude("mlir-c/IR.h");
-  @cInclude("linda-c/Dialect.h");
-});
-
-fn initDialectOp(name: [*c]const u8, loc: c.MlirLocation) c.MlirOperationState {
-  return c.mlirOperationStateGet(c.mlirStringRefCreateFromCString(name), loc);
-}
+const mlir = @import("mlir.zig");
+const tensor = @import("tensor.zig");
 
 // TODO: custom zig-c interop MlirStringCallback for runtime print string memory allocation
 // interface: (MlirStringRef, void* userData) -> ?
+// TODO: github actions CI for tests
 
 pub fn main() !void {
-  const ctx = c.mlirContextCreate();
-  defer c.mlirContextDestroy(ctx);
+  var gpa = std.heap.DebugAllocator(.{}).init;
+  defer _ = gpa.deinit();
 
-  const handle = c.mlirGetDialectHandle__linda__();
-  c.mlirDialectHandleRegisterDialect(handle, ctx);
-  const dialect = c.mlirDialectHandleLoadDialect(handle, ctx);
+  var tctx = tensor.TensorCtx.init(gpa.allocator());
+  defer tctx.deinit();
 
-  std.debug.print("loaded linda dialect: {}\n", .{
-    !c.mlirDialectIsNull(dialect),
-  });
+  const a = try tensor.Tensor(f32).ones(&tctx, &.{64, 128});
+  const b = try tensor.Tensor(f32).ones(&tctx, &.{64, 128});
+  const c = try a.add(b);
+  // c.print();
 
-  const noloc = c.mlirLocationUnknownGet(ctx);
-  const op_state = initDialectOp("linda.add", noloc);
-  _ = op_state;
-
-  // const op = c.mlirOperationCreate(&op_state);
-  // mlirOperationPrint(op, hjhj);
+  try c.compile();
 
   std.debug.print("was that life?\n", .{});
 }
