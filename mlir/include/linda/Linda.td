@@ -34,10 +34,6 @@ def AddOp : LindaOp<"add"> {
   let results = (outs F32Tensor:$res);
 
   let assemblyFormat = "$lhs `:` type($lhs) `,` $rhs `:` type($rhs) attr-dict `:` type($res)";
-
-  let builders = [
-    OpBuilder<(ins "mlir::Value":$lhs, "mlir::Value":$rhs)>
-  ];
 }
 
 def MulOp : LindaOp<"mul"> {
@@ -47,10 +43,6 @@ def MulOp : LindaOp<"mul"> {
   let results = (outs F32Tensor:$res);
 
   let assemblyFormat = "$lhs `:` type($lhs) `,` $rhs `:` type($rhs) attr-dict `:` type($res)";
-
-  let builders = [
-    OpBuilder<(ins "mlir::Value":$lhs, "mlir::Value":$rhs)>
-  ];
 }
 
 def ReshapeOp : LindaOp<"reshape"> {
@@ -60,10 +52,6 @@ def ReshapeOp : LindaOp<"reshape"> {
   let results = (outs F32Tensor:$res);
 
   let assemblyFormat = "$value `:` type($value) attr-dict `:` type($res)";
-
-  let builders = [
-    OpBuilder<(ins "mlir::Value":$value)>
-  ];
 }
 
 #endif
