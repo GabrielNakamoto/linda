@@ -4,8 +4,7 @@ const mlir = @import("mlir.zig");
 pub const IROp = enum {
   Create,
   Add, Mul,
-  Reshape, Transpose,
-  Dot,
+  Reshape
 };
 
 pub const DType = enum { f32, u32, i32 };
@@ -30,7 +29,10 @@ pub const TensorCtx = struct {
     };
   }
 
-  pub fn deinit(self: *TensorCtx) void { self.arena.deinit(); }
+  pub fn deinit(self: *TensorCtx) void {
+    self.arena.deinit();
+    std.debug.print("was that life?\n", .{});
+  }
 };
 
 pub const Node = struct {
@@ -118,7 +120,6 @@ pub fn Tensor(comptime T: type) type {
       var tensor_schedule: std.ArrayList(*const Node) = .empty;
       var visited: std.AutoHashMap(*const Node, void) = .init(self.ctx.compile_arena.allocator());
       try self.node.topovisit(self.ctx.compile_arena.allocator(), &visited, &tensor_schedule);
-      // free dict here?, cant: its part of arena
 
       var mlir_gen = mlir.MLIRGenerator.init(self.ctx.compile_arena.allocator());
       defer mlir_gen.deinit();

@@ -15,6 +15,8 @@ fn dtypeToMlirType(ctx: c.MlirContext, dtype: tensor.DType) !c.MlirType {
   };
 }
 
+fn stringRef(str: []const u8) c.MlirStringRef { return c.mlirStringRefCreateFromCString(@ptrCast(str)); }
+
 pub const MLIRGenerator = struct {
   ctx: c.MlirContext,
   gpa: std.mem.Allocator,
@@ -39,15 +41,14 @@ pub const MLIRGenerator = struct {
     return .{ .ctx = ctx, .gpa = allocator, .symbol_table = .init(allocator) };
   }
 
-  pub fn tensorToMlir(self: *Self, node: *const tensor.Node, loc: c.MlirLocation) !c.MlirOperation {
+  fn tensorToMlir(self: *Self, node: *const tensor.Node, loc: c.MlirLocation) !c.MlirOperation {
     const op_name = switch (node.op) {
       .Create => "linda.create",
       .Add => "linda.add",
       .Mul => "linda.mul",
-      else => return error.TensorIRNotInDialect
+      .Reshape => "linda.reshape"
     };
-    const mlir_name = c.mlirStringRefCreateFromCString(@ptrCast(op_name));
-    var op_state = c.mlirOperationStateGet(mlir_name, loc);
+    var op_state = c.mlirOperationStateGet(stringRef(op_name), loc);
 
     var operands = try self.gpa.alloc(c.MlirValue, node.inputs.len);
     for (node.inputs, 0..) |edge, i| {
@@ -74,14 +75,16 @@ pub const MLIRGenerator = struct {
 
   pub fn compileTensorSchedule(self: *Self, schedule: std.ArrayList(*const tensor.Node)) !c.MlirModule {
     const loc = c.mlirLocationUnknownGet(self.ctx);
-    const mod = c.mlirModuleCreateEmpty(loc);
+    const module = c.mlirModuleCreateEmpty(loc);
+    const block = c.mlirModuleGetBody(module);
 
-    for (schedule.items) |node| {
+    for (schedule.items, 0..) |node, pc| {
       const mlir_op = try self.tensorToMlir(node, loc);
       try self.symbol_table.put(node, mlir_op);
-      c.mlirOperationDump(mlir_op);
+      c.mlirBlockInsertOwnedOperation(block, @intCast(pc), mlir_op);
     }
 
-    return mod;
+    c.mlirOperationDump(c.mlirModuleGetOperation(module));
+    return module;
   }
 };
