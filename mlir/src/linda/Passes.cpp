@@ -9,8 +9,21 @@
 
 #include "mlir/Dialect/Affine/IR/AffineOps.h"
 #include "mlir/Dialect/Arith/IR/Arith.h"
+#include "mlir/Dialect/Func/IR/FuncOps.h"
+#include "mlir/Dialect/LLVMIR/LLVMDialect.h"
 #include "mlir/Dialect/Bufferization/IR/Bufferization.h"
-#include "mlir/Dialect/Memref/IR/MemRef.h"
+#include "mlir/Dialect/MemRef/IR/MemRef.h"
+#include "mlir/Dialect/SCF/IR/SCF.h"
+#include "mlir/Dialect/ControlFlow/IR/ControlFlow.h"
+
+#include "mlir/Conversion/LLVMCommon/TypeConverter.h"
+#include "mlir/Conversion/LLVMCommon/ConversionTarget.h"
+#include "mlir/Conversion/AffineToStandard/AffineToStandard.h"
+#include "mlir/Conversion/ArithToLLVM/ArithToLLVM.h"
+#include "mlir/Conversion/SCFToControlFlow/SCFToControlFlow.h"
+#include "mlir/Conversion/MemRefToLLVM/MemRefToLLVM.h"
+#include "mlir/Conversion/FuncToLLVM/ConvertFuncToLLVM.h"
+#include "mlir/Conversion/ControlFlowToLLVM/ControlFlowToLLVM.h"
 
 #include <memory>
 
@@ -114,6 +127,21 @@ struct LowerToAffinePass
   void runOnOperation() final;
 };
 
+
+struct LowerToLLVMPass
+  : public PassWrapper<LowerToLLVMPass, OperationPass<ModuleOp>> {
+
+    MLIR_DEFINE_EXPLICIT_INTERNAL_INLINE_TYPE_ID(LowerToLLVMPass)
+
+    StringRef getArgument() const override { return "affine-to-llvm"; }
+
+    void getDependentDialects(DialectRegistry &registry) const override {
+      registry.insert<LLVM::LLVMDialect, scf::SCFDialect, cf::ControlFlowDialect>();
+    }
+
+  	void runOnOperation() final;
+};
+
 }
 
 void LowerToAffinePass::runOnOperation() {
@@ -140,6 +168,30 @@ void LowerToAffinePass::runOnOperation() {
     signalPassFailure();
 }
 
+void LowerToLLVMPass::runOnOperation() {
+  LLVMConversionTarget target(getContext());
+
+  target.addLegalOp<mlir::ModuleOp>();
+
+  LLVMTypeConverter typeConverter(&getContext());
+
+  RewritePatternSet patterns(&getContext());
+  populateAffineToStdConversionPatterns(patterns);
+  populateSCFToControlFlowConversionPatterns(patterns);
+  arith::populateArithToLLVMConversionPatterns(typeConverter, patterns);
+  populateFinalizeMemRefToLLVMConversionPatterns(typeConverter, patterns);
+  cf::populateControlFlowToLLVMConversionPatterns(typeConverter, patterns);
+  populateFuncToLLVMConversionPatterns(typeConverter, patterns);
+
+	if (failed(
+		applyFullConversion(getOperation(), target, std::move(patterns))))
+		signalPassFailure();
+}
+
 std::unique_ptr<mlir::Pass> linda::createLowerToAffinePass() {
   return std::make_unique<LowerToAffinePass>();
+}
+
+std::unique_ptr<mlir::Pass> linda::createLowerToLLVMPass() {
+  return std::make_unique<LowerToLLVMPass>();
 }

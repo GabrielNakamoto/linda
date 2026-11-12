@@ -46,8 +46,19 @@ add_mlir_conversion_library(MLIRLindaPasses
     MLIRArithDialect
     MLIRBufferizationDialect
     MLIRMemRefDialect
+    MLIRLLVMDialect
     MLIRPass
     MLIRTransformUtils
+    MLIRAffineToStandard
+    MLIRArithToLLVM
+    MLIRSCFToControlFlow
+    MLIRMemRefToLLVM
+    MLIRControlFlowToLLVM
+    MLIRFuncToLLVM
+    MLIRLLVMCommonConversion
+    MLIRSCFDialect
+    MLIRControlFlowDialect
+    MLIRFuncDialect
 )
 
 target_include_directories(MLIRLindaPasses

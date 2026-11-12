@@ -77,6 +77,8 @@ pub const MLIRGenerator = struct {
 
   pub fn init(allocator: std.mem.Allocator) MLIRGenerator {
     const ctx = c.mlirContextCreate();
+    // NOTE: make this toggleable, needed for rewrite IR printing
+    c.mlirContextEnableMultithreading(ctx, false);
 
     const dialects = [_][]const u8 { "linda", "bufferization", "func" };
     dialectRegisters(dialects[0..]).do(ctx);
@@ -173,19 +175,23 @@ pub const MLIRGenerator = struct {
 
     const module_block = c.mlirModuleGetBody(module);
     c.mlirBlockAppendOwnedOperation(module_block, kernel_op);
-    c.mlirOperationDump(c.mlirModuleGetOperation(module));
 
     // (3) progressive graph rewrites to lower to LLVM IR
     // start with built in affine dialect for simple, efficient Tensor loop representation
     const passManager = c.mlirPassManagerCreate(self.ctx);
     const affinePass = c.mlirCreateLindaLowerToAffinePass();
+    const llvmPass = c.mlirCreateLindaLowerToLLVMPass();
+
+    c.mlirPassManagerEnableIRPrinting(
+      passManager, true, true, true, false, false, c.mlirOpPrintingFlagsCreate(), stringRef(""));
+
     c.mlirPassManagerAddOwnedPass(passManager, affinePass);
+    c.mlirPassManagerAddOwnedPass(passManager, llvmPass);
 
     const result = c.mlirPassManagerRunOnOp(passManager, c.mlirModuleGetOperation(module));
     _ = result;
     // std.debug.assert(c.mlirLogicalResultIsSuccess(result));
 
-    c.mlirOperationDump(c.mlirModuleGetOperation(module));
     return module;
   }
 };

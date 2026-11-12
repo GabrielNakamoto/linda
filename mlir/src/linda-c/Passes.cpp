@@ -6,9 +6,8 @@
 extern "C" {
 #endif
 
-MlirPass mlirCreateLindaLowerToAffinePass() {
-  return wrap(linda::createLowerToAffinePass().release());
-}
+MlirPass mlirCreateLindaLowerToAffinePass() { return wrap(linda::createLowerToAffinePass().release()); }
+MlirPass mlirCreateLindaLowerToLLVMPass() { return wrap(linda::createLowerToLLVMPass().release()); }
 
 #ifdef __cplusplus
 }

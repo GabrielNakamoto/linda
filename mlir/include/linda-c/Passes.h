@@ -9,6 +9,7 @@ extern "C" {
 #endif
 
 MLIR_CAPI_EXPORTED MlirPass mlirCreateLindaLowerToAffinePass(void);
+MLIR_CAPI_EXPORTED MlirPass mlirCreateLindaLowerToLLVMPass(void);
 
 #ifdef __cplusplus
 }
