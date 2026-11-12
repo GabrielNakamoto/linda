@@ -13,10 +13,22 @@ Pedagogical MLIR Tensor compiler and runtime.
 * How easy is it to write a rudimentary deep learning compiler capable of training and running non-trivial machine learning models
 * How easy is it to write MLIR optimization passes using builtin dialects? Kernel fusion, folding, affine transformations
 
-#### Latest IR Sample:
+#### Under the hood:
 
-1. **Tensor Graph**
+1. **Zig Torch-like API**
+```zig
+const a = try Tensor(f32).ones(&ctx, &.{32, 64});
+const b = try Tensor(f32).ones(&ctx, &.{32, 64});
+
+const c = try a.add(b);
+const d = try c.mul(a);
+const z = try a.add(c);
+const y = try z.mul(d);
+try y.compile();
 ```
+
+3. **Custom MLIR Dialect**
+```mlir
 module {
   func.func @kernel(%arg0: memref<32x64xf32>, %arg1: memref<32x64xf32>) {
     %0 = bufferization.to_tensor %arg0 : memref<32x64xf32> to tensor<32x64xf32>
@@ -30,8 +42,8 @@ module {
 }
 ```
 
-2. **Affine Graph**
-```
+3. **Affine Graph**
+```mlir
 module {
   func.func @kernel(%arg0: memref<32x64xf32>, %arg1: memref<32x64xf32>) {
     %alloc = memref.alloc() : memref<32x64xf32>
@@ -78,3 +90,7 @@ module {
   }
 }
 ```
+
+4. **LLVM IR kernel binary**
+
+Omitted for brevity
