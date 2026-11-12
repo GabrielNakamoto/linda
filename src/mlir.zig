@@ -1,7 +1,10 @@
 const std = @import("std");
 const tensor = @import("tensor.zig");
 const c = @cImport({
+  @cInclude("mlir-c/RegisterEverything.h");
+  @cInclude("llvm-c/Core.h");
   @cInclude("mlir-c/IR.h");
+  @cInclude("mlir-c/Target/LLVMIR.h");
   @cInclude("mlir-c/BuiltinTypes.h");
   @cInclude("mlir-c/BuiltinAttributes.h");
   @cInclude("mlir-c/Dialect/Bufferization.h");
@@ -79,6 +82,7 @@ pub const MLIRGenerator = struct {
 
   pub fn init(allocator: std.mem.Allocator, debug: bool) MLIRGenerator {
     const ctx = c.mlirContextCreate();
+    c.mlirRegisterAllLLVMTranslations(ctx);
 
     // needed for rewrite IR printing
     if (debug) c.mlirContextEnableMultithreading(ctx, false);
@@ -121,7 +125,7 @@ pub const MLIRGenerator = struct {
     return createOp(loc, op_name, operands, result_t, null, null);
   }
 
-  pub fn compileTensorSchedule(self: *Self, schedule: std.ArrayList(*const tensor.Node)) !c.MlirModule {
+  pub fn compileTensorSchedule(self: *Self, schedule: std.ArrayList(*const tensor.Node)) !c.LLVMModuleRef {
     const loc = c.mlirLocationUnknownGet(self.ctx);
     const module = c.mlirModuleCreateEmpty(loc);
 
@@ -198,6 +202,14 @@ pub const MLIRGenerator = struct {
     _ = result;
     // std.debug.assert(c.mlirLogicalResultIsSuccess(result));
 
-    return module;
+    const llvmCtx = c.LLVMContextCreate();
+    const llvmModule = c.mlirTranslateModuleToLLVMIR(c.mlirModuleGetOperation(module), llvmCtx);
+
+    if (self.debug) {
+      var msg = "";
+      _ = c.LLVMPrintModuleToFile(llvmModule, "kernel.ll", @ptrCast(&msg));
+    }
+
+    return llvmModule;
   }
 };

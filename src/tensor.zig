@@ -124,8 +124,8 @@ pub fn Tensor(comptime T: type) type {
       var mlir_gen = mlir.MLIRGenerator.init(self.ctx.compile_arena.allocator(), debug);
       defer mlir_gen.deinit();
 
-      const mod = try mlir_gen.compileTensorSchedule(tensor_schedule);
-      _ = mod;
+      const llvmModule = try mlir_gen.compileTensorSchedule(tensor_schedule);
+      _ = llvmModule;
     }
   };
 }

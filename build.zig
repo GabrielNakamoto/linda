@@ -27,7 +27,9 @@ pub fn build(b: *std.Build) void {
       "IR",
       "Transforms",
       "Bufferization",
-      "Func"
+      "Func",
+      "RegisterEverything",
+      "Target"
     };
 
     const llvm_prefix = "/opt/homebrew/opt/llvm";

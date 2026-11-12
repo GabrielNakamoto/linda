@@ -93,4 +93,4 @@ module {
 
 4. **LLVM IR kernel binary**
 
-Omitted for brevity
+See [llvmi module dump](./kernel.ll)
