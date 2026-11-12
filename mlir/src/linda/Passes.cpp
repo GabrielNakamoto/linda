@@ -57,10 +57,20 @@ static void lowerOpToLoops(Operation *op, ValueRange operands, PatternRewriter &
 // **** Op Specific Rewrite Patterns ****
 namespace {
 
+struct ToTensorLowering : OpConversionPattern<bufferization::ToTensorOp> {
+  using OpConversionPattern::OpConversionPattern;
+
+  LogicalResult matchAndRewrite(bufferization::ToTensorOp op, OpAdaptor adaptor,
+    ConversionPatternRewriter &rewriter) const override {
+    rewriter.replaceOp(op, adaptor.getBuffer());
+    return success();
+  }
+};
+
 template <typename BinaryOp, typename LoweredBinaryOp>
 struct BinaryOpLowering : public ConversionPattern {
-  BinaryOpLowering(MLIRContext *ctx)
-    : ConversionPattern(BinaryOp::getOperationName(), 1, ctx) {}
+  BinaryOpLowering(TypeConverter &typeConverter, MLIRContext *ctx)
+    : ConversionPattern(typeConverter, BinaryOp::getOperationName(), 1, ctx) {}
 
   LogicalResult
   matchAndRewrite(Operation *op, ArrayRef<Value> operands,
@@ -109,14 +119,21 @@ struct LowerToAffinePass
 void LowerToAffinePass::runOnOperation() {
   ConversionTarget target(getContext());
 
-  target.addLegalDialect<affine::AffineDialect, BuiltinDialect, arith::ArithDialect,
-    memref::MemRefDialect, bufferization::BufferizationDialect>();
+  target.addLegalDialect<affine::AffineDialect, BuiltinDialect, arith::ArithDialect, memref::MemRefDialect>();
   target.addIllegalDialect<linda::LindaDialect>();
+  target.addIllegalOp<bufferization::ToTensorOp>();
 
   RewritePatternSet patterns(&getContext());
 
+  TypeConverter typeConverter;
+
+  typeConverter.addConversion([](Type type) { return type; });
+  typeConverter.addConversion([](RankedTensorType type) -> Type {
+    return MemRefType::get(type.getShape(), type.getElementType());
+  });
+
   // register all rewrite pass patterns here
-  patterns.add<AddOpLowering, MulOpLowering>(&getContext());
+  patterns.add<AddOpLowering, MulOpLowering, ToTensorLowering>(typeConverter, &getContext());
 
   if (failed(
     applyPartialConversion(getOperation(), target, std::move(patterns))))
