@@ -4,6 +4,7 @@ const c = @cImport({
   @cInclude("mlir-c/IR.h");
   @cInclude("mlir-c/BuiltinTypes.h");
   @cInclude("mlir-c/BuiltinAttributes.h");
+  @cInclude("mlir-c/Dialect/Bufferization.h");
   @cInclude("linda-c/Passes.h");
   @cInclude("linda-c/Dialect.h");
 });
@@ -46,6 +47,22 @@ fn tensorToMlirType(gpa: std.mem.Allocator, ctx: c.MlirContext, shape: []const u
   return mlir_t;
 }
 
+// yay comptime magic
+const dialects = [_][]const u8 { "linda", "bufferization" };
+fn dialectRegisters() type {
+  return struct {
+    pub fn do(ctx: c.MlirContext) void {
+      inline for (dialects) |name| {
+        const handleFn = @field(c, "mlirGetDialectHandle__" ++ name ++ "__");
+        const handle = handleFn();
+        c.mlirDialectHandleRegisterDialect(handle, ctx);
+        const dialect = c.mlirDialectHandleLoadDialect(handle, ctx);
+        std.debug.assert(! c.mlirDialectIsNull(dialect));
+      }
+    }
+  };
+}
+
 // ******** Main MLIR Compilation Engine *******
 pub const MLIRGenerator = struct {
   ctx: c.MlirContext,
@@ -61,11 +78,7 @@ pub const MLIRGenerator = struct {
   pub fn init(allocator: std.mem.Allocator) MLIRGenerator {
     const ctx = c.mlirContextCreate();
 
-    // load custom dialect from CAPI registry
-    const handle = c.mlirGetDialectHandle__linda__();
-    c.mlirDialectHandleRegisterDialect(handle, ctx);
-    const dialect = c.mlirDialectHandleLoadDialect(handle, ctx);
-    std.debug.assert(! c.mlirDialectIsNull(dialect));
+    dialectRegisters().do(ctx);
     std.debug.print("succesfully loaded dialect...\n", .{});
 
     return .{ .ctx = ctx, .gpa = allocator, .symbol_table = .init(allocator) };
@@ -171,7 +184,6 @@ pub const MLIRGenerator = struct {
     std.debug.assert(c.mlirLogicalResultIsSuccess(result));
 
     c.mlirOperationDump(c.mlirModuleGetOperation(module));
-
     return module;
   }
 };

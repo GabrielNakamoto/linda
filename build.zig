@@ -25,7 +25,8 @@ pub fn build(b: *std.Build) void {
     const lib_lst = [_][]const u8 {
       "Affine",
       "IR",
-      "Transforms"
+      "Transforms",
+      "Bufferization"
     };
 
     const llvm_prefix = "/opt/homebrew/opt/llvm";
