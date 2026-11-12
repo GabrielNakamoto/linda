@@ -1,0 +1,75 @@
+# Linda
+
+Pedagogical MLIR Tensor compiler and runtime.
+
+- Embedded Zig torch-like frontend
+- Schedules and splits top level Tensor program into individual kernels
+- kernels are lowered through multiple MLIR rewrite passes
+- outputted as individual accelerator specific binaries via LLVM IR at the bottom
+- Host buffers allocated and managed through zig, passed in as ptr/memrefs to MLIR block arguments
+
+#### Motivating questions:
+* How simple/idiomatic is MLIR?
+* How easy is it to write a rudimentary deep learning compiler capable of training and running non-trivial machine learning models
+* How easy is it to write MLIR optimization passes using builtin dialects? Kernel fusion, folding, affine transformations
+
+#### Latest IR Sample:
+
+```
+module {
+  func.func @kernel(%arg0: memref<32x64xf32>, %arg1: memref<32x64xf32>) {
+    %0 = bufferization.to_tensor %arg0 : memref<32x64xf32> to tensor<32x64xf32>
+    %1 = bufferization.to_tensor %arg1 : memref<32x64xf32> to tensor<32x64xf32>
+    %2 = linda.add %0 : tensor<32x64xf32>, %1 : tensor<32x64xf32> : tensor<32x64xf32>
+    %3 = linda.add %0 : tensor<32x64xf32>, %2 : tensor<32x64xf32> : tensor<32x64xf32>
+    %4 = linda.mul %2 : tensor<32x64xf32>, %0 : tensor<32x64xf32> : tensor<32x64xf32>
+    %5 = linda.mul %3 : tensor<32x64xf32>, %4 : tensor<32x64xf32> : tensor<32x64xf32>
+    return
+  }
+}
+module {
+  func.func @kernel(%arg0: memref<32x64xf32>, %arg1: memref<32x64xf32>) {
+    %alloc = memref.alloc() : memref<32x64xf32>
+    %alloc_0 = memref.alloc() : memref<32x64xf32>
+    %alloc_1 = memref.alloc() : memref<32x64xf32>
+    %alloc_2 = memref.alloc() : memref<32x64xf32>
+    affine.for %arg2 = 0 to 32 {
+      affine.for %arg3 = 0 to 64 {
+        %0 = affine.load %arg0[%arg2, %arg3] : memref<32x64xf32>
+        %1 = affine.load %arg1[%arg2, %arg3] : memref<32x64xf32>
+        %2 = arith.addf %0, %1 : f32
+        affine.store %2, %alloc_2[%arg2, %arg3] : memref<32x64xf32>
+      }
+    }
+    affine.for %arg2 = 0 to 32 {
+      affine.for %arg3 = 0 to 64 {
+        %0 = affine.load %arg0[%arg2, %arg3] : memref<32x64xf32>
+        %1 = affine.load %alloc_2[%arg2, %arg3] : memref<32x64xf32>
+        %2 = arith.addf %0, %1 : f32
+        affine.store %2, %alloc_1[%arg2, %arg3] : memref<32x64xf32>
+      }
+    }
+    affine.for %arg2 = 0 to 32 {
+      affine.for %arg3 = 0 to 64 {
+        %0 = affine.load %alloc_2[%arg2, %arg3] : memref<32x64xf32>
+        %1 = affine.load %arg0[%arg2, %arg3] : memref<32x64xf32>
+        %2 = arith.mulf %0, %1 : f32
+        affine.store %2, %alloc_0[%arg2, %arg3] : memref<32x64xf32>
+      }
+    }
+    affine.for %arg2 = 0 to 32 {
+      affine.for %arg3 = 0 to 64 {
+        %0 = affine.load %alloc_1[%arg2, %arg3] : memref<32x64xf32>
+        %1 = affine.load %alloc_0[%arg2, %arg3] : memref<32x64xf32>
+        %2 = arith.mulf %0, %1 : f32
+        affine.store %2, %alloc[%arg2, %arg3] : memref<32x64xf32>
+      }
+    }
+    memref.dealloc %alloc_2 : memref<32x64xf32>
+    memref.dealloc %alloc_1 : memref<32x64xf32>
+    memref.dealloc %alloc_0 : memref<32x64xf32>
+    memref.dealloc %alloc : memref<32x64xf32>
+    return
+  }
+}
+```
