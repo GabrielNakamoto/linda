@@ -8,6 +8,7 @@ const c = @cImport({
   @cInclude("linda-c/Dialect.h");
 });
 
+// ****** MLIR Wrappers and Conversion *******
 fn dtypeToMlirType(ctx: c.MlirContext, dtype: tensor.DType) !c.MlirType {
   return switch (dtype) {
     .f32 => c.mlirF32TypeGet(ctx),
@@ -16,15 +17,36 @@ fn dtypeToMlirType(ctx: c.MlirContext, dtype: tensor.DType) !c.MlirType {
   };
 }
 
-fn stringRef(str: []const u8) c.MlirStringRef { return c.mlirStringRefCreateFromCString(@ptrCast(str)); }
+fn stringRef(str: []const u8) c.MlirStringRef {
+  return c.mlirStringRefCreateFromCString(@ptrCast(str));
+}
 
-fn createOp(name: []const u8, operands: ?[]c.MlirValue, result_t: ?c.MlirType) c.MlirOperation {
-  var op_state = c.MlirOperationStateGet(stringRef(name));
-  if (operands) |ops| c.mlirOperationStateAddOperands(@ptrCast(&op_state), @intCast(ops.len), @ptrCast(ops.ptr))
-  if (result_t) |typ| c.mlirOperationStateAddResults(@ptrCast(&op_state), 1, typ);
+fn getNamedAttribute(ctx: c.MlirContext, name: []const u8, attr: c.MlirAttribute) c.MlirNamedAttribute {
+  return c.mlirNamedAttributeGet(c.mlirIdentifierGet(ctx, stringRef(name)), attr);
+}
+
+fn createOp(loc: c.MlirLocation, name: []const u8, operands: ?[]const c.MlirValue, result_t: ?*const c.MlirType,
+  attributes: ?[]const c.MlirNamedAttribute, regions: ?[]const c.MlirRegion) c.MlirOperation {
+  var op_state = c.mlirOperationStateGet(stringRef(name), loc);
+  if (operands) |ops| c.mlirOperationStateAddOperands(@ptrCast(&op_state), @intCast(ops.len), @ptrCast(ops.ptr));
+  if (result_t) |tp| c.mlirOperationStateAddResults(@ptrCast(&op_state), 1, @ptrCast(tp));
+  if (attributes) |attr| c.mlirOperationStateAddAttributes(@ptrCast(&op_state), @intCast(attr.len), @ptrCast(attr.ptr));
+  if (regions) |rs| c.mlirOperationStateAddOwnedRegions(@ptrCast(&op_state), @intCast(rs.len), @ptrCast(rs.ptr));
   return c.mlirOperationCreate(@ptrCast(&op_state));
 }
 
+fn tensorToMlirType(gpa: std.mem.Allocator, ctx: c.MlirContext, shape: []const u64, dtype: tensor.DType) !*const c.MlirType {
+  const mlir_t = try gpa.create(c.MlirType);
+  mlir_t.* = c.mlirRankedTensorTypeGet(
+    @intCast(shape.len),
+    @ptrCast(shape.ptr),
+    try dtypeToMlirType(ctx, dtype),
+    c.mlirAttributeGetNull()
+  );
+  return mlir_t;
+}
+
+// ******** Main MLIR Compilation Engine *******
 pub const MLIRGenerator = struct {
   ctx: c.MlirContext,
   gpa: std.mem.Allocator,
@@ -54,37 +76,25 @@ pub const MLIRGenerator = struct {
       .Add => "linda.add",
       .Mul => "linda.mul",
       .Reshape => "linda.reshape",
-      else => error.UnsupportedTensorIROp
+      else => return error.UnsupportedTensorIROp
     };
 
     var operands = try self.gpa.alloc(c.MlirValue, node.inputs.len);
     for (node.inputs, 0..) |edge, i| {
       std.debug.assert(self.symbol_table.contains(edge));
-      if (self.symbol_table.get(edge)) |mval| {
-        operands[i] = c.mlirOperationGetResult(mval, 0);
-      } else {
-        return error.TopoFailure;
-      }
+      operands[i] = self.symbol_table.get(edge) orelse return error.TopoFailure;
     }
 
-    const result_t = try self.gpa.create(c.MlirType);
-    result_t.* = c.mlirRankedTensorTypeGet(
-      @intCast(node.shape.len),
-      @ptrCast(node.shape.ptr),
-      try dtypeToMlirType(self.ctx, node.dtype),
-      c.mlirAttributeGetNull()
-    );
-
-    return createOp(op_name, operands, result_t);
+    const result_t = try tensorToMlirType(self.gpa, self.ctx, node.shape, node.dtype);
+    return createOp(loc, op_name, operands, result_t, null, null);
   }
 
   pub fn compileTensorSchedule(self: *Self, schedule: std.ArrayList(*const tensor.Node)) !c.MlirModule {
     const loc = c.mlirLocationUnknownGet(self.ctx);
     const module = c.mlirModuleCreateEmpty(loc);
-    const block = c.mlirModuleGetBody(module);
 
-    var karg_nodes: std.ArrayList(const *tensor.Node) = .empty;
-    var karg_types: std.ArrayList(c.MlirValue) = .empty;
+    var karg_nodes: std.ArrayList(*const tensor.Node) = .empty;
+    var karg_types: std.ArrayList(c.MlirType) = .empty;
 
     // (1) Construct kernel entry region parameterized by Zig allocated root Tensor
     //      buffers as scoped memref typed values. All other Tensor ops reference
@@ -93,41 +103,65 @@ pub const MLIRGenerator = struct {
       if (node.op != .Buffer) continue;
 
       // root nodes passes as memref arguments to kernel function
-      const buf_t = c.mlirMemRefTypeContiguous(
-        try dtypeToMlirType(node.dtype),
-        node.shape.len,
-        &node.shape,
-        c.mlirAttributesGetNull()
+      const buf_t = c.mlirMemRefTypeContiguousGet(
+        try dtypeToMlirType(self.ctx, node.dtype),
+        @intCast(node.shape.len),
+        @ptrCast(node.shape.ptr),
+        c.mlirAttributeGetNull()
       );
       try karg_nodes.append(self.gpa, node);
-      try karg_types.append(slef.gpa, buf_t);
+      try karg_types.append(self.gpa, buf_t);
     }
 
-    var kernel_region = c.mlirRegionCreate();
-    var locs = self.gpa.alloc(c.MlirLocation, karg_types.items.len);
-    for (&locs) |*l| l.* = loc;
+    const kernel_region = c.mlirRegionCreate();
+    const locs = try self.gpa.alloc(c.MlirLocation, karg_types.items.len);
+    for (locs) |*l| l.* = loc;
+    const block = c.mlirBlockCreate(@intCast(karg_types.items.len), @ptrCast(karg_types.items.ptr), @ptrCast(locs.ptr));
+    c.mlirRegionAppendOwnedBlock(kernel_region, block);
 
-    const entry = c.mlirBlockCreate(karg_types.items.len, &karg_types, &locs);
-    c.mlirRegionAppendOwnedBlock(kernel_region, entry);
+    const func_t = c.mlirFunctionTypeGet(self.ctx, @intCast(karg_types.items.len), @ptrCast(&karg_types.items), 0, null);
+    const attrs = [_]c.MlirNamedAttribute{
+      getNamedAttribute(self.ctx, "sym_name", c.mlirStringAttrGet(self.ctx, stringRef("kernel"))),
+      getNamedAttribute(self.ctx, "function_type", c.mlirTypeAttrGet(func_t))
+    };
+    const regions = [_]c.MlirRegion{kernel_region};
+    const kernel_op = createOp(loc, "func.func", null, null, attrs[0..], regions[0..]);
 
-    for (karg_nodes.items, 0..) |sym, i| {
-      self.symbol_table.put(sym, c.mlirBlockGetArgument(entry, i));
+    var pc: u32 = 0;
+    for (karg_nodes.items, 0..) |node, i| {
+      // cast to tensor
+      const buf = c.mlirBlockGetArgument(block, @intCast(i));
+      const tensor_type = try tensorToMlirType(self.gpa, self.ctx, node.shape, node.dtype);
+      const operand = [_]c.MlirValue{buf};
+      const buf_tensor = createOp(loc, "bufferization.to_tensor", operand[0..], tensor_type, null, null);
+
+      c.mlirBlockInsertOwnedOperation(block, @intCast(pc), buf_tensor);
+      try self.symbol_table.put(node, c.mlirOperationGetResult(buf_tensor, 0));
+
+      pc += 1;
     }
 
     // (2)  Construct SSA list of Tensor operations using Linda dialect
     //      incoming edges are resolved by symbol table, dtypes mapped to MLIR
-    var pc = 0;
     for (schedule.items) |node| {
       if (node.op == .Buffer) continue;
       const mlir_op = try self.tensorToMlir(node, loc);
+      // append to kernel basic block
       c.mlirBlockInsertOwnedOperation(block, @intCast(pc), mlir_op);
 
-      const result = c.mlirOperationGetResult(mlir_op);
+      const result = c.mlirOperationGetResult(mlir_op, 0);
       try self.symbol_table.put(node, result);
       pc += 1;
     }
 
-    c.mlirOperationDump(c.mlirModuleGetOperation(module));
+    const ret_op = createOp(loc, "func.return", null, null, null, null);
+    c.mlirBlockInsertOwnedOperation(block, @intCast(pc), ret_op);
+
+    c.mlirOperationDump(kernel_op);
+
+    const module_block = c.mlirModuleGetBody(module);
+    c.mlirBlockAppendOwnedOperation(module_block, kernel_op);
+    // c.mlirOperationDump(c.mlirModuleGetOperation(module));
 
     // (3) progressive graph rewrites to lower to LLVM IR
     // start with built in affine dialect for simple, efficient Tensor loop representation
