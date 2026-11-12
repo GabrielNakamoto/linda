@@ -15,6 +15,7 @@ Pedagogical MLIR Tensor compiler and runtime.
 
 #### Latest IR Sample:
 
+1. **Tensor Graph**
 ```
 module {
   func.func @kernel(%arg0: memref<32x64xf32>, %arg1: memref<32x64xf32>) {
@@ -27,6 +28,10 @@ module {
     return
   }
 }
+```
+
+2. **Affine Graph**
+```
 module {
   func.func @kernel(%arg0: memref<32x64xf32>, %arg1: memref<32x64xf32>) {
     %alloc = memref.alloc() : memref<32x64xf32>
