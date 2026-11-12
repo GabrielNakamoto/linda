@@ -9,6 +9,7 @@
 
 #include "mlir/Dialect/Affine/IR/AffineOps.h"
 #include "mlir/Dialect/Arith/IR/Arith.h"
+#include "mlir/Dialect/Bufferization/IR/Bufferization.h"
 #include "mlir/Dialect/Memref/IR/MemRef.h"
 
 #include <memory>
@@ -85,6 +86,8 @@ struct BinaryOpLowering : public ConversionPattern {
 using AddOpLowering = BinaryOpLowering<linda::AddOp, arith::AddFOp>;
 using MulOpLowering = BinaryOpLowering<linda::MulOp, arith::MulFOp>;
 
+}
+
 namespace {
 
 struct LowerToAffinePass
@@ -95,7 +98,7 @@ struct LowerToAffinePass
   StringRef getArgument() const override { return "linda-to-affine"; }
 
   void getDependentDialects(DialectRegistry &registry) const override {
-    registry.insert<affine::AffineDialect, arith::ArithDialect, memref::MemRefDialect>();
+    registry.insert<affine::AffineDialect, arith::ArithDialect, memref::MemRefDialect, bufferization::BufferizationDialect>();
   }
 
   void runOnOperation() final;
@@ -106,7 +109,8 @@ struct LowerToAffinePass
 void LowerToAffinePass::runOnOperation() {
   ConversionTarget target(getContext());
 
-  target.addLegalDialect<affine::AffineDialect, BuiltinDialect, arith::ArithDialect, memref::MemRefDialect>();
+  target.addLegalDialect<affine::AffineDialect, BuiltinDialect, arith::ArithDialect,
+    memref::MemRefDialect, bufferization::BufferizationDialect>();
   target.addIllegalDialect<linda::LindaDialect>();
 
   RewritePatternSet patterns(&getContext());

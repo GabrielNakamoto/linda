@@ -44,6 +44,7 @@ add_mlir_conversion_library(MLIRLindaPasses
     MLIRLinda
     MLIRAffineDialect
     MLIRArithDialect
+    MLIRBufferizationDialect
     MLIRMemRefDialect
     MLIRPass
     MLIRTransformUtils

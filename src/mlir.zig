@@ -119,7 +119,7 @@ pub const MLIRGenerator = struct {
     const block = c.mlirBlockCreate(@intCast(karg_types.items.len), @ptrCast(karg_types.items.ptr), @ptrCast(locs.ptr));
     c.mlirRegionAppendOwnedBlock(kernel_region, block);
 
-    const func_t = c.mlirFunctionTypeGet(self.ctx, @intCast(karg_types.items.len), @ptrCast(&karg_types.items), 0, null);
+    const func_t = c.mlirFunctionTypeGet(self.ctx, @intCast(karg_types.items.len), @ptrCast(karg_types.items.ptr), 0, null);
     const attrs = [_]c.MlirNamedAttribute{
       getNamedAttribute(self.ctx, "sym_name", c.mlirStringAttrGet(self.ctx, stringRef("kernel"))),
       getNamedAttribute(self.ctx, "function_type", c.mlirTypeAttrGet(func_t))
@@ -154,14 +154,12 @@ pub const MLIRGenerator = struct {
       pc += 1;
     }
 
-    const ret_op = createOp(loc, "func.return", null, null, null, null);
+    const ret_op = createOp(loc, "func.return", null, &func_t, null, null);
     c.mlirBlockInsertOwnedOperation(block, @intCast(pc), ret_op);
-
-    c.mlirOperationDump(kernel_op);
 
     const module_block = c.mlirModuleGetBody(module);
     c.mlirBlockAppendOwnedOperation(module_block, kernel_op);
-    // c.mlirOperationDump(c.mlirModuleGetOperation(module));
+    c.mlirOperationDump(c.mlirModuleGetOperation(module));
 
     // (3) progressive graph rewrites to lower to LLVM IR
     // start with built in affine dialect for simple, efficient Tensor loop representation
