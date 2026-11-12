@@ -1,5 +1,19 @@
+add_mlir_public_c_api_library(MLIRLindaCAPI
+  linda-c/Passes.cpp
+  linda-c/Dialect.cpp
+
+  DEPENDS
+    LindaIncGen
+
+  LINK_LIBS PUBLIC
+    MLIRLinda
+    MLIRLindaPasses
+    MLIRCAPIIR
+)
+
+
 add_mlir_dialect_library(MLIRLinda
-  Dialect.cpp
+  linda/Dialect.cpp
 
   PARTIAL_SOURCES_INTENDED
 
@@ -18,7 +32,7 @@ target_include_directories(MLIRLinda
 
 
 add_mlir_conversion_library(MLIRLindaPasses
-  Passes.cpp
+  linda/Passes.cpp
 
   PARTIAL_SOURCES_INTENDED
 
@@ -30,6 +44,7 @@ add_mlir_conversion_library(MLIRLindaPasses
     MLIRLinda
     MLIRAffineDialect
     MLIRArithDialect
+    MLIRMemRefDialect
     MLIRPass
     MLIRTransformUtils
 )

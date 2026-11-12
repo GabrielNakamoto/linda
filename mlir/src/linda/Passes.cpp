@@ -1,7 +1,9 @@
+#include "linda/Dialect.h"
+#include "linda/Passes.h"
+
 #include "mlir/IR/BuiltinDialect.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/BuiltinTypes.h"
-#include "linda/Dialect.h"
 #include "mlir/Pass/Pass.h"
 #include "mlir/Transforms/DialectConversion.h"
 
@@ -29,9 +31,9 @@ static Value insertAllocAndDealloc(MemRefType type, Location loc, PatternRewrite
   return alloc;
 }
 
-using LoopIterationFn = function_ref<Value(OpBuilder &rewriter, ValueRange loopIvs)>;
+using LoopIterationFn = function_ref<Value(OpBuilder &rewriter, ValueRange memRefOperands, ValueRange loopIvs)>;
 
-static void lowerOpToLoops(Operation *op, PatternRewriter &rewriter, LoopIterationFn processIteration) {
+static void lowerOpToLoops(Operation *op, ValueRange operands, PatternRewriter &rewriter, LoopIterationFn processIteration) {
   auto tensorType = llvm::cast<RankedTensorType>((*op->result_type_begin()));
   auto loc = op->getLoc();
 
@@ -43,13 +45,48 @@ static void lowerOpToLoops(Operation *op, PatternRewriter &rewriter, LoopIterati
   affine::buildAffineLoopNest(
     rewriter, loc, lowerBounds, tensorType.getShape(), steps,
     [&](OpBuilder &nestedBuilder, Location loc, ValueRange ivs){
-      Value valueToStore = processIteration(nestedBuilder, ivs);
+      Value valueToStore = processIteration(nestedBuilder, operands, ivs);
       affine::AffineStoreOp::create(nestedBuilder, loc, valueToStore, alloc, ivs);
     }
   );
 
   rewriter.replaceOp(op, alloc);
 }
+
+// **** Op Specific Rewrite Patterns ****
+namespace {
+
+template <typename BinaryOp, typename LoweredBinaryOp>
+struct BinaryOpLowering : public ConversionPattern {
+  BinaryOpLowering(MLIRContext *ctx)
+    : ConversionPattern(BinaryOp::getOperationName(), 1, ctx) {}
+
+  LogicalResult
+  matchAndRewrite(Operation *op, ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const final {
+    auto loc = op->getLoc();
+    lowerOpToLoops(op, operands, rewriter,
+          [loc](OpBuilder &builder, ValueRange memRefOperands, ValueRange loopIvs) {
+            typename BinaryOp::Adaptor binaryAdaptor(memRefOperands);
+
+            // load both tensor buffers from memory in affine loop and apply binop
+            auto loadedLhs = builder.create<affine::AffineLoadOp>(
+              loc, binaryAdaptor.getLhs(), loopIvs);
+            auto loadedRhs = builder.create<affine::AffineLoadOp>(
+              loc, binaryAdaptor.getRhs(), loopIvs);
+
+            return builder.create<LoweredBinaryOp>(
+              loc, loadedLhs, loadedRhs);
+          });
+    return success();
+  }
+};
+
+using AddOpLowering = BinaryOpLowering<linda::AddOp, arith::AddFOp>;
+using MulOpLowering = BinaryOpLowering<linda::MulOp, arith::MulFOp>;
+
+}
+
 
 namespace {
 
@@ -77,14 +114,14 @@ void LowerToAffinePass::runOnOperation() {
 
   RewritePatternSet patterns(&getContext());
 
-  patterns.add<>();
+  // register all rewrite pass patterns here
+  patterns.add<AddOpLowering, MulOpLowering>(&getContext());
 
   if (failed(
     applyPartialConversion(getOperation(), target, std::move(patterns))))
     signalPassFailure();
 }
 
-
-std::unique_ptr<mlir::Pass> createLowerToAffinePass() {
+std::unique_ptr<mlir::Pass> linda::createLowerToAffinePass() {
   return std::make_unique<LowerToAffinePass>();
 }

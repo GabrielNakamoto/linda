@@ -42,9 +42,9 @@ pub fn build(b: *std.Build) void {
 
     // custom mlir dialect
     exe.root_module.addIncludePath(b.path("mlir/include"));
-    exe.root_module.addObjectFile(
-      b.path("mlir/lib/libMLIRLinda.a"),
-    );
+    exe.root_module.addObjectFile(b.path("mlir/lib/libMLIRLinda.a"));
+    exe.root_module.addObjectFile(b.path("mlir/lib/libMLIRLindaPasses.a"));
+    exe.root_module.addObjectFile(b.path("mlir/lib/libMLIRLindaCAPI.a"));
 
     b.installArtifact(exe);
 
