@@ -114,14 +114,14 @@ pub fn Tensor(comptime T: type) type {
     pub fn add(self: Self, other: Self) !Self { return try self.binop(other, IROp.Add, true); }
     pub fn mul(self: Self, other: Self) !Self { return try self.binop(other, IROp.Mul, true); }
 
-    pub fn compile(self: *const Self) !void {
+    pub fn compile(self: *const Self, debug: bool) !void {
       defer self.ctx.compile_arena.deinit();
 
       var tensor_schedule: std.ArrayList(*const Node) = .empty;
       var visited: std.AutoHashMap(*const Node, void) = .init(self.ctx.compile_arena.allocator());
       try self.node.topovisit(self.ctx.compile_arena.allocator(), &visited, &tensor_schedule);
 
-      var mlir_gen = mlir.MLIRGenerator.init(self.ctx.compile_arena.allocator());
+      var mlir_gen = mlir.MLIRGenerator.init(self.ctx.compile_arena.allocator(), debug);
       defer mlir_gen.deinit();
 
       const mod = try mlir_gen.compileTensorSchedule(tensor_schedule);

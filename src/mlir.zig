@@ -68,6 +68,8 @@ pub const MLIRGenerator = struct {
   ctx: c.MlirContext,
   gpa: std.mem.Allocator,
   symbol_table: std.AutoHashMap(*const tensor.Node, c.MlirValue),
+  pass_manager: c.MlirPassManager,
+  debug: bool,
 
   const Self = @This();
 
@@ -75,16 +77,30 @@ pub const MLIRGenerator = struct {
     c.mlirContextDestroy(self.ctx);
   }
 
-  pub fn init(allocator: std.mem.Allocator) MLIRGenerator {
+  pub fn init(allocator: std.mem.Allocator, debug: bool) MLIRGenerator {
     const ctx = c.mlirContextCreate();
-    // NOTE: make this toggleable, needed for rewrite IR printing
-    c.mlirContextEnableMultithreading(ctx, false);
 
+    // needed for rewrite IR printing
+    if (debug) c.mlirContextEnableMultithreading(ctx, false);
+
+    // register dialects
     const dialects = [_][]const u8 { "linda", "bufferization", "func" };
     dialectRegisters(dialects[0..]).do(ctx);
     std.debug.print("succesfully loaded dialects...\n", .{});
 
-    return .{ .ctx = ctx, .gpa = allocator, .symbol_table = .init(allocator) };
+    // load passes
+    const passManager = c.mlirPassManagerCreate(ctx);
+    const affinePass = c.mlirCreateLindaLowerToAffinePass();
+    const llvmPass = c.mlirCreateLindaLowerToLLVMPass();
+    if (debug) {
+      c.mlirPassManagerEnableIRPrinting(
+        passManager, true, true, true, false, false, c.mlirOpPrintingFlagsCreate(), stringRef(""));
+    }
+    c.mlirPassManagerAddOwnedPass(passManager, affinePass);
+    c.mlirPassManagerAddOwnedPass(passManager, llvmPass);
+    std.debug.print("succesfully added rewrite passes...\n", .{});
+
+    return .{ .ctx = ctx, .gpa = allocator, .symbol_table = .init(allocator), .debug = debug, .pass_manager = passManager };
   }
 
   fn tensorToMlir(self: *Self, node: *const tensor.Node, loc: c.MlirLocation) !c.MlirOperation {
@@ -178,17 +194,7 @@ pub const MLIRGenerator = struct {
 
     // (3) progressive graph rewrites to lower to LLVM IR
     // start with built in affine dialect for simple, efficient Tensor loop representation
-    const passManager = c.mlirPassManagerCreate(self.ctx);
-    const affinePass = c.mlirCreateLindaLowerToAffinePass();
-    const llvmPass = c.mlirCreateLindaLowerToLLVMPass();
-
-    c.mlirPassManagerEnableIRPrinting(
-      passManager, true, true, true, false, false, c.mlirOpPrintingFlagsCreate(), stringRef(""));
-
-    c.mlirPassManagerAddOwnedPass(passManager, affinePass);
-    c.mlirPassManagerAddOwnedPass(passManager, llvmPass);
-
-    const result = c.mlirPassManagerRunOnOp(passManager, c.mlirModuleGetOperation(module));
+    const result = c.mlirPassManagerRunOnOp(self.pass_manager, c.mlirModuleGetOperation(module));
     _ = result;
     // std.debug.assert(c.mlirLogicalResultIsSuccess(result));
 

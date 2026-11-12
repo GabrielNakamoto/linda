@@ -18,7 +18,7 @@ pub fn main() !void {
   const d = try c.mul(a);
   const z = try a.add(c);
   const y = try z.mul(d);
-  try y.compile();
+  try y.compile(true);
 
   // const x = try y.reshape(&.{128, 16});
   // try x.compile();
