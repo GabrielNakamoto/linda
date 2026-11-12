@@ -2,7 +2,7 @@ const std = @import("std");
 const mlir = @import("mlir.zig");
 
 pub const IROp = enum {
-  Create,
+  Buffer,
   Add, Mul,
   Reshape
 };
@@ -81,7 +81,7 @@ pub fn Tensor(comptime T: type) type {
       @memset(data, 1.0);
 
       const node = try ctx.arena.allocator().create(Node);
-      node.* = .{ .op = IROp.Create, .shape = new_shape, .data = std.mem.sliceAsBytes(data), .dtype = dtypeOf(T) };
+      node.* = .{ .op = IROp.Buffer, .shape = new_shape, .data = std.mem.sliceAsBytes(data), .dtype = dtypeOf(T) };
       return .{ .node = node, .ctx = ctx };
     }
 
@@ -130,8 +130,13 @@ pub fn Tensor(comptime T: type) type {
   };
 }
 
+// test "test toposort" {
+//  var gpa = std.testing.allocator;
+//  var schedule: std.ArrayList(*const Node) = .empt;y
+//}
+
 test "test tensor" {
-  var gpa = std.heap.DebugAllocator(.{}).init;
+  var gpa = std.testing.allocator;
   defer _ = gpa.deinit();
 
   var ctx = TensorCtx.init(gpa.allocator());

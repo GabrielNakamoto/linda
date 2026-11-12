@@ -26,12 +26,7 @@ class LindaOp<string mnemonic, list<Trait> traits = []> :
 // TODO: untyped/generic dtype tensors?
 
 // ----- Operations -----
-def CreateOp : LindaOp<"create"> {
-  let summary = "initialize Tensor with runtime memory buffer";
-
-  let arguments = (ins MemRefRankOf<[I8], [1]>:$buffer);
-  let results = (outs F32Tensor:$res);
-}
+// note: no creation op, allocated as host buffers in Zig and passed as mlir native memref typed func args
 
 def AddOp : LindaOp<"add"> {
   let summary = "elementwise addition with broadcasting";

@@ -85,9 +85,6 @@ struct BinaryOpLowering : public ConversionPattern {
 using AddOpLowering = BinaryOpLowering<linda::AddOp, arith::AddFOp>;
 using MulOpLowering = BinaryOpLowering<linda::MulOp, arith::MulFOp>;
 
-}
-
-
 namespace {
 
 struct LowerToAffinePass
