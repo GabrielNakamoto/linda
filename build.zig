@@ -32,6 +32,7 @@ pub fn build(b: *std.Build) void {
       "Target"
     };
 
+    // TODO: make a note that this has to be configured per-user, make it a build arg/ENV var
     const llvm_prefix = "/opt/homebrew/opt/llvm";
 
     exe.root_module.addIncludePath(.{ .cwd_relative = llvm_prefix ++ "/include" });

@@ -5,6 +5,7 @@ const backend = @import("backend.zig");
 pub const IROp = enum {
   Buffer,
   Add, Mul,
+  Sqrt,
   Reshape
 };
 
@@ -57,6 +58,11 @@ pub const Node = struct {
     visited: *std.AutoHashMap(*const Node, void), schedule: *std.ArrayList(*const Node)) !void {
     if (visited.contains(self)) return;
 
+    // we can additionally perform spec verification here, we see every op
+    if (self.op == .Buffer) {
+      std.debug.assert(self.data != null);
+    }
+
     for (self.inputs) |edge| {
       try edge.topovisit(gpa, visited, schedule);
     }
@@ -99,6 +105,7 @@ pub fn Tensor(comptime T: type) type {
       return .{ .node = node, .ctx = self.ctx };
     }
 
+    // TODO: scalar bin exprs?, multiple builders in custom Dialect/Op cpp
     fn binop(self: Self, other: Self, op: IROp, broadcast: bool) !Self {
       const left = self.node;
       const right = other.node;
@@ -116,9 +123,11 @@ pub fn Tensor(comptime T: type) type {
       return .{ .node = node, .ctx = self.ctx };
     }
 
-    pub fn reshape(self: *const Self, comptime new_shape: []const u64) !Self { return try self.unop(IROp.Reshape, new_shape); }
     pub fn add(self: Self, other: Self) !Self { return try self.binop(other, IROp.Add, true); }
     pub fn mul(self: Self, other: Self) !Self { return try self.binop(other, IROp.Mul, true); }
+
+    pub fn reshape(self: *const Self, comptime new_shape: []const u64) !Self { return try self.unop(IROp.Reshape, new_shape); }
+    pub fn sqrt(self: Self) !Self { return try self.unop(IROp.Sqrt, null); }
 
     pub fn compile(self: *const Self) !void {
       defer self.ctx.compile_arena.deinit();
@@ -130,8 +139,9 @@ pub fn Tensor(comptime T: type) type {
       var mlir_gen = mlir.MLIRGenerator.init(self.ctx.compile_arena.allocator(), self.ctx.debug);
       defer mlir_gen.deinit();
 
-      const llvmModule = try mlir_gen.compileTensorSchedule(tensor_schedule);
-      try backend.compileKernelModule(llvmModule, self.ctx.targetArch, self.ctx.debug);
+      const mlirModule = try mlir_gen.compileTensorSchedule(tensor_schedule);
+      const bin = try backend.compileKernelModule(mlirModule, self.ctx.targetArch, self.ctx.debug);
+      _ = bin;
     }
   };
 }
