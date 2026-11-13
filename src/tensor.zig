@@ -1,6 +1,6 @@
 const std = @import("std");
 const mlir = @import("mlir.zig");
-const amd = @import("backends/amd.zig");
+const backend = @import("backend.zig");
 
 pub const IROp = enum {
   Buffer,
@@ -20,19 +20,23 @@ pub fn dtypeOf(comptime T: type) DType {
 }
 
 pub const TensorCtx = struct {
+  targetArch: backend.Accelerator,
   arena: std.heap.ArenaAllocator,
   compile_arena: std.heap.ArenaAllocator,
+  debug: bool,
 
-  pub fn init(backing: std.mem.Allocator) TensorCtx {
+  pub fn init(backing: std.mem.Allocator, arch: backend.Accelerator, debug: bool) TensorCtx {
     return .{
       .arena = .init(backing),
-      .compile_arena = .init(backing)
+      .compile_arena = .init(backing),
+      .debug = debug,
+      .targetArch = arch
     };
   }
 
   pub fn deinit(self: *TensorCtx) void {
     self.arena.deinit();
-    std.debug.print("was that life?\n", .{});
+    std.debug.print("Was that life? Well then! Once more!\n", .{});
   }
 };
 
@@ -49,7 +53,8 @@ pub const Node = struct {
       .{@tagName(self.op), self.dtype, self.shape, head, self.inputs.len});
   }
 
-  fn topovisit(self: *const Node, gpa: std.mem.Allocator, visited: *std.AutoHashMap(*const Node, void), schedule: *std.ArrayList(*const Node)) !void {
+  fn topovisit(self: *const Node, gpa: std.mem.Allocator,
+    visited: *std.AutoHashMap(*const Node, void), schedule: *std.ArrayList(*const Node)) !void {
     if (visited.contains(self)) return;
 
     for (self.inputs) |edge| {
@@ -115,44 +120,18 @@ pub fn Tensor(comptime T: type) type {
     pub fn add(self: Self, other: Self) !Self { return try self.binop(other, IROp.Add, true); }
     pub fn mul(self: Self, other: Self) !Self { return try self.binop(other, IROp.Mul, true); }
 
-    pub fn compile(self: *const Self, debug: bool) !void {
+    pub fn compile(self: *const Self) !void {
       defer self.ctx.compile_arena.deinit();
 
       var tensor_schedule: std.ArrayList(*const Node) = .empty;
       var visited: std.AutoHashMap(*const Node, void) = .init(self.ctx.compile_arena.allocator());
       try self.node.topovisit(self.ctx.compile_arena.allocator(), &visited, &tensor_schedule);
 
-      var mlir_gen = mlir.MLIRGenerator.init(self.ctx.compile_arena.allocator(), debug);
+      var mlir_gen = mlir.MLIRGenerator.init(self.ctx.compile_arena.allocator(), self.ctx.debug);
       defer mlir_gen.deinit();
 
       const llvmModule = try mlir_gen.compileTensorSchedule(tensor_schedule);
-      try amd.compileKernel(llvmModule);
+      try backend.compileKernelModule(llvmModule, self.ctx.targetArch, self.ctx.debug);
     }
   };
-}
-
-// test "test toposort" {
-//  var gpa = std.testing.allocator;
-//  var schedule: std.ArrayList(*const Node) = .empt;y
-//}
-
-test "test tensor" {
-  var gpa = std.testing.allocator;
-  defer _ = gpa.deinit();
-
-  var ctx = TensorCtx.init(gpa.allocator());
-  defer ctx.deinit();
-
-  const a = try Tensor(f32).ones(&ctx, &.{32, 64});
-  const b = try Tensor(f32).ones(&ctx, &.{32, 64});
-
-  const c = try a.add(b);
-  const d = try c.mul(a);
-  const z = try a.add(c);
-  const y = try z.mul(d);
-  const x = try y.reshape(&.{128, 16});
-
-  // x.print();
-
-  try x.compile();
 }

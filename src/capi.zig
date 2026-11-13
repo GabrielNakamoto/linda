@@ -6,7 +6,7 @@ pub const imports = @cImport({
   @cInclude("llvm-c/Target.h");
   @cInclude("llvm-c/TargetMachine.h");
   @cInclude("llvm-c/Analysis.h");
-
+  @cInclude("llvm-c/Transforms/PassBuilder.h");
 
 	// mlir CAPI
   @cInclude("mlir-c/RegisterEverything.h");

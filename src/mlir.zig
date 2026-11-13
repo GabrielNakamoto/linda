@@ -83,7 +83,6 @@ pub const MLIRGenerator = struct {
     // register dialects
     const dialects = [_][]const u8 { "linda", "bufferization", "func", "affine" };
     dialectRegisters(dialects[0..]).do(ctx);
-    std.debug.print("succesfully loaded dialects...\n", .{});
 
     // load passes
     const passManager = c.mlirPassManagerCreate(ctx);
@@ -95,6 +94,7 @@ pub const MLIRGenerator = struct {
     c.mlirRegisterAffinePasses();
 
     const optPm = c.mlirPassManagerGetNestedUnder(passManager, stringRef("func.func"));
+    // TODO: experiment with this more, https://mlir.llvm.org/docs/Passes/#affine-dialect-passes
     const result = c.mlirOpPassManagerAddPipeline(
       optPm, stringRef("affine-loop-fusion, affine-loop-tile{tile-sizes=8,16}"), pipelineDiagnostic, null);
     std.debug.assert(c.mlirLogicalResultIsSuccess(result));
@@ -104,8 +104,6 @@ pub const MLIRGenerator = struct {
 
     // TODO: stdout callback and do this
     // if (debug) c.mlirPrintPassPipeline(passManager, , null);
-
-    std.debug.print("succesfully added rewrite passes...\n", .{});
 
     return .{ .ctx = ctx, .gpa = allocator, .symbol_table = .init(allocator), .debug = debug, .pass_manager = passManager };
   }
