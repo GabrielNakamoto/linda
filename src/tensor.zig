@@ -1,5 +1,6 @@
 const std = @import("std");
 const mlir = @import("mlir.zig");
+const amd = @import("backends/amd.zig");
 
 pub const IROp = enum {
   Buffer,
@@ -125,7 +126,7 @@ pub fn Tensor(comptime T: type) type {
       defer mlir_gen.deinit();
 
       const llvmModule = try mlir_gen.compileTensorSchedule(tensor_schedule);
-      _ = llvmModule;
+      try amd.compileKernelToAsm(llvmModule);
     }
   };
 }
