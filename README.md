@@ -15,6 +15,8 @@ Pedagogical MLIR Tensor compiler and runtime.
 
 #### Under the hood:
 
+Here we follow a very simple example program through the compilation pipeline:
+
 1. **Zig Torch-like API**
 ```zig
 const a = try Tensor(f32).ones(&ctx, &.{32, 64});
@@ -26,6 +28,15 @@ const z = try a.add(c);
 const y = try z.mul(d);
 try y.compile();
 ```
+
+**Here is the equivalant DAG:**
+
+<p align="center">
+  <img width="450" height="450" alt="tensor_graph" src="https://github.com/user-attachments/assets/ae7506c4-112c-4eef-b7fa-404e4816164e" />
+</p>
+<br><br>
+
+`tensor.compile()` linearizes the graph via topological sorting before proceeding to MLIR so that tensor operations on incoming edges are always executed first. The exact order matters for performance reasons, and can be further optimized as there are usually many different possible permutations.
 
 3. **Custom MLIR Dialect**
 ```mlir
