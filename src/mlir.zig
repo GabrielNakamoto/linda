@@ -55,6 +55,10 @@ fn dialectRegisters(comptime dialects: []const []const u8) type {
   };
 }
 
+fn pipelineDiagnostic(msg: c.MlirStringRef, _:?*anyopaque) callconv(.c) void {
+  std.debug.print("pass pipeline error: {s}", .{msg.data[0..msg.length]});
+}
+
 // ******** Main MLIR Compilation Engine *******
 pub const MLIRGenerator = struct {
   ctx: c.MlirContext,
@@ -77,20 +81,30 @@ pub const MLIRGenerator = struct {
     if (debug) c.mlirContextEnableMultithreading(ctx, false);
 
     // register dialects
-    const dialects = [_][]const u8 { "linda", "bufferization", "func" };
+    const dialects = [_][]const u8 { "linda", "bufferization", "func", "affine" };
     dialectRegisters(dialects[0..]).do(ctx);
     std.debug.print("succesfully loaded dialects...\n", .{});
 
     // load passes
     const passManager = c.mlirPassManagerCreate(ctx);
-    const affinePass = c.mlirCreateLindaLowerToAffinePass();
-    const llvmPass = c.mlirCreateLindaLowerToLLVMPass();
     if (debug) {
       c.mlirPassManagerEnableIRPrinting(
         passManager, true, true, true, false, false, c.mlirOpPrintingFlagsCreate(), stringRef(""));
     }
-    c.mlirPassManagerAddOwnedPass(passManager, affinePass);
-    c.mlirPassManagerAddOwnedPass(passManager, llvmPass);
+    c.mlirPassManagerAddOwnedPass(passManager, c.mlirCreateLindaLowerToAffinePass());
+    c.mlirRegisterAffinePasses();
+
+    const optPm = c.mlirPassManagerGetNestedUnder(passManager, stringRef("func.func"));
+    const result = c.mlirOpPassManagerAddPipeline(
+      optPm, stringRef("affine-loop-fusion, affine-loop-tile{tile-sizes=8,16}"), pipelineDiagnostic, null);
+    std.debug.assert(c.mlirLogicalResultIsSuccess(result));
+
+    // final pass to LLVM IR
+    c.mlirPassManagerAddOwnedPass(passManager, c.mlirCreateLindaLowerToLLVMPass());
+
+    // TODO: stdout callback and do this
+    // if (debug) c.mlirPrintPassPipeline(passManager, , null);
+
     std.debug.print("succesfully added rewrite passes...\n", .{});
 
     return .{ .ctx = ctx, .gpa = allocator, .symbol_table = .init(allocator), .debug = debug, .pass_manager = passManager };

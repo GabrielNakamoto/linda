@@ -126,7 +126,7 @@ pub fn Tensor(comptime T: type) type {
       defer mlir_gen.deinit();
 
       const llvmModule = try mlir_gen.compileTensorSchedule(tensor_schedule);
-      try amd.compileKernelToAsm(llvmModule);
+      try amd.compileKernel(llvmModule);
     }
   };
 }
