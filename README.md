@@ -143,6 +143,7 @@ module {
 4. **LLVM IR kernel binary**
 
 See [llvmir module output](./dump/kernel.ll)
+and [optimized (O2)](./dump/kernel-opt.ll)
 
 5. **Target specific binary/asm image**
 
