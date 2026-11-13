@@ -93,4 +93,8 @@ module {
 
 4. **LLVM IR kernel binary**
 
-See [llvmi module dump](./kernel.ll)
+See [llvmir module output](./dump/kernel.ll)
+
+5. **Target specific binary/asm image**
+
+See [gfx1100 amd asm output](./dump/kernel.s)

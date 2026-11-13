@@ -1,17 +1,6 @@
 const std = @import("std");
 const tensor = @import("tensor.zig");
-const c = @cImport({
-  @cInclude("mlir-c/RegisterEverything.h");
-  @cInclude("llvm-c/Core.h");
-  @cInclude("mlir-c/IR.h");
-  @cInclude("mlir-c/Target/LLVMIR.h");
-  @cInclude("mlir-c/BuiltinTypes.h");
-  @cInclude("mlir-c/BuiltinAttributes.h");
-  @cInclude("mlir-c/Dialect/Bufferization.h");
-  @cInclude("mlir-c/Dialect/Func.h");
-  @cInclude("linda-c/Passes.h");
-  @cInclude("linda-c/Dialect.h");
-});
+const c = @import("capi.zig").imports;
 
 // ****** MLIR Wrappers and Conversion *******
 fn dtypeToMlirType(ctx: c.MlirContext, dtype: tensor.DType) !c.MlirType {
@@ -207,7 +196,7 @@ pub const MLIRGenerator = struct {
 
     if (self.debug) {
       var msg = "";
-      _ = c.LLVMPrintModuleToFile(llvmModule, "kernel.ll", @ptrCast(&msg));
+      _ = c.LLVMPrintModuleToFile(llvmModule, "dump/kernel.ll", @ptrCast(&msg));
     }
 
     return llvmModule;
