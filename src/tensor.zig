@@ -1,6 +1,8 @@
 const std = @import("std");
 const mlir = @import("mlir.zig");
 const backend = @import("backend.zig");
+const cuda = @import("cudaz");
+const c = @import("capi.zig").imports;
 
 pub const IROp = enum {
   Buffer,
@@ -130,8 +132,21 @@ pub fn Tensor(comptime T: type) type {
       var mlir_gen = mlir.MLIRGenerator.init(self.ctx.compile_arena.allocator(), self.ctx.debug);
       defer mlir_gen.deinit();
 
-      const llvmModule = try mlir_gen.compileTensorSchedule(tensor_schedule);
-      try backend.compileKernelModule(llvmModule, self.ctx.targetArch, self.ctx.debug);
+      const mlirModule = try mlir_gen.compileTensorSchedule(tensor_schedule);
+      const bin = try backend.compileKernelModule(mlirModule, self.ctx.targetArch, self.ctx.debug);
+      // defer c.LLVMDisposeMemoryBuffer(bin);
+
+      // hacky cuda runtime bringup
+      const device = try cuda.Device.default();
+      defer device.deinit();
+
+      // const gpa = self.ctx.compile_arena.allocator();
+      const bufLen = c.LLVMGetBufferSize(bin);
+      const binSlice: [:0]const u8 = c.LLVMGetBufferStart(bin)[0..bufLen:0];
+
+      const cudaModule = try cuda.Device.loadPtxText(binSlice);
+      const func = try cudaModule.getFunc("kernel");
+      _ = func;
     }
   };
 }

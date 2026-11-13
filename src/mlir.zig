@@ -126,7 +126,7 @@ pub const MLIRGenerator = struct {
     return createOp(loc, op_name, operands, result_t, null, null);
   }
 
-  pub fn compileTensorSchedule(self: *Self, schedule: std.ArrayList(*const tensor.Node)) !c.LLVMModuleRef {
+  pub fn compileTensorSchedule(self: *Self, schedule: std.ArrayList(*const tensor.Node)) !c.MlirModule {
     const loc = c.mlirLocationUnknownGet(self.ctx);
     const module = c.mlirModuleCreateEmpty(loc);
 
@@ -201,16 +201,6 @@ pub const MLIRGenerator = struct {
     // start with built in affine dialect for simple, efficient Tensor loop representation
     const result = c.mlirPassManagerRunOnOp(self.pass_manager, c.mlirModuleGetOperation(module));
     _ = result;
-    // std.debug.assert(c.mlirLogicalResultIsSuccess(result));
-
-    const llvmCtx = c.LLVMContextCreate();
-    const llvmModule = c.mlirTranslateModuleToLLVMIR(c.mlirModuleGetOperation(module), llvmCtx);
-
-    if (self.debug) {
-      var msg = "";
-      _ = c.LLVMPrintModuleToFile(llvmModule, "dump/kernel.ll", @ptrCast(&msg));
-    }
-
-    return llvmModule;
+    return module;
   }
 };

@@ -3,13 +3,14 @@ const mlir = @import("mlir.zig");
 const tensor = @import("tensor.zig");
 const backend = @import("backend.zig");
 const Tensor = tensor.Tensor;
+const Cuda = @import("cudaz");
 
 // TODO: github actions CI for tests?
 pub fn main() !void {
   var gpa = std.heap.DebugAllocator(.{}).init;
   defer _ = gpa.deinit();
 
-  var ctx = tensor.TensorCtx.init(gpa.allocator(), backend.RDNA3, true);
+  var ctx = tensor.TensorCtx.init(gpa.allocator(), backend.NVIDIA, false);
   defer ctx.deinit();
 
   const a = try Tensor(f32).ones(&ctx, &.{32, 64});

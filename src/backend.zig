@@ -7,9 +7,18 @@ pub const Accelerator = struct {
 };
 
 pub const RDNA3: Accelerator = .{ .triple = "amdgcn-amd-amdhsa", .cpu = "gfx1100" };
-pub const NVIDIA: Accelerator = .{ .triple = "nvptx-nvidia-cuda", .cpu = "sm60" };
+pub const NVIDIA: Accelerator = .{ .triple = "nvptx64-nvidia-cuda", .cpu = "sm_120" };
 
-pub fn compileKernelModule(module: c.LLVMModuleRef, arch: Accelerator, debug: bool) !void {
+pub fn compileKernelModule(mlirModule: c.MlirModule, arch: Accelerator, debug: bool) !c.LLVMMemoryBufferRef {
+  const ctx = c.LLVMContextCreate();
+  defer c.LLVMContextDispose(ctx);
+  const module = c.mlirTranslateModuleToLLVMIR(c.mlirModuleGetOperation(mlirModule), ctx);
+
+  var msg = "";
+  if (debug) {
+    _ = c.LLVMPrintModuleToFile(module, "dump/kernel.ll", @ptrCast(&msg));
+  }
+
 	c.LLVMInitializeAllTargets();
 	c.LLVMInitializeAllTargetMCs();
 	c.LLVMInitializeAllTargetInfos();
@@ -18,7 +27,6 @@ pub fn compileKernelModule(module: c.LLVMModuleRef, arch: Accelerator, debug: bo
 
   var target: c.LLVMTargetRef = null;
 
-  var msg = "";
   _ = c.LLVMGetTargetFromTriple(@ptrCast(arch.triple), &target, @ptrCast(&msg));
 
   const machine = c.LLVMCreateTargetMachine(target, @ptrCast(arch.triple), @ptrCast(arch.cpu), "",
@@ -40,5 +48,9 @@ pub fn compileKernelModule(module: c.LLVMModuleRef, arch: Accelerator, debug: bo
   if (debug) {
     _ = c.LLVMTargetMachineEmitToFile(machine, module, "dump/kernel.s", c.LLVMAssemblyFile, @ptrCast(&msg));
   }
+
+  var buffer: c.LLVMMemoryBufferRef = null;
+  _ = c.LLVMTargetMachineEmitToMemoryBuffer(machine, module, c.LLVMAssemblyFile, @ptrCast(&msg), &buffer);
+  return buffer;
 }
 

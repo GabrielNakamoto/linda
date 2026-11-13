@@ -17,7 +17,8 @@ pub fn build(b: *std.Build) void {
             .imports = &.{
                 .{ .name = "linda", .module = mod },
             },
-            .link_libcpp = true
+            .link_libc = true,
+            .link_libcpp = false
         }),
     });
 
@@ -32,7 +33,7 @@ pub fn build(b: *std.Build) void {
       "Target"
     };
 
-    const llvm_prefix = "/opt/homebrew/opt/llvm";
+    const llvm_prefix = "/users/gnakamot/miniforge3";
 
     exe.root_module.addIncludePath(.{ .cwd_relative = llvm_prefix ++ "/include" });
     exe.root_module.addLibraryPath(.{ .cwd_relative = llvm_prefix ++ "/lib" });
@@ -43,12 +44,21 @@ pub fn build(b: *std.Build) void {
 
     exe.root_module.linkSystemLibrary("MLIR", .{ .preferred_link_mode = .dynamic });
     exe.root_module.linkSystemLibrary("LLVM", .{ .preferred_link_mode = .dynamic });
+    exe.root_module.addObjectFile(.{ .cwd_relative = llvm_prefix ++ "/lib/libstdc++.so" });
 
     // custom mlir dialect
     exe.root_module.addIncludePath(b.path("mlir/include"));
     exe.root_module.addObjectFile(b.path("mlir/lib/libMLIRLinda.a"));
     exe.root_module.addObjectFile(b.path("mlir/lib/libMLIRLindaPasses.a"));
     exe.root_module.addObjectFile(b.path("mlir/lib/libMLIRLindaCAPI.a"));
+
+    // setup zig binding cuda runtime dep
+    const cudaz_dep = b.dependency("cudaz", .{});
+    const cudaz_module = cudaz_dep.module("cudaz");
+    exe.root_module.addImport("cudaz", cudaz_module);
+
+    exe.root_module.linkSystemLibrary("cuda", .{});
+    exe.root_module.linkSystemLibrary("nvrtc", .{});
 
     b.installArtifact(exe);
 
