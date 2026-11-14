@@ -127,21 +127,6 @@ struct LowerToAffinePass
   void runOnOperation() final;
 };
 
-
-struct LowerToLLVMPass
-  : public PassWrapper<LowerToLLVMPass, OperationPass<ModuleOp>> {
-
-    MLIR_DEFINE_EXPLICIT_INTERNAL_INLINE_TYPE_ID(LowerToLLVMPass)
-
-    StringRef getArgument() const override { return "affine-to-llvm"; }
-
-    void getDependentDialects(DialectRegistry &registry) const override {
-      registry.insert<LLVM::LLVMDialect, scf::SCFDialect, cf::ControlFlowDialect>();
-    }
-
-  	void runOnOperation() final;
-};
-
 }
 
 void LowerToAffinePass::runOnOperation() {
@@ -168,30 +153,6 @@ void LowerToAffinePass::runOnOperation() {
     signalPassFailure();
 }
 
-void LowerToLLVMPass::runOnOperation() {
-  LLVMConversionTarget target(getContext());
-
-  target.addLegalOp<mlir::ModuleOp>();
-
-  LLVMTypeConverter typeConverter(&getContext());
-
-  RewritePatternSet patterns(&getContext());
-  populateAffineToStdConversionPatterns(patterns);
-  populateSCFToControlFlowConversionPatterns(patterns);
-  arith::populateArithToLLVMConversionPatterns(typeConverter, patterns);
-  populateFinalizeMemRefToLLVMConversionPatterns(typeConverter, patterns);
-  cf::populateControlFlowToLLVMConversionPatterns(typeConverter, patterns);
-  populateFuncToLLVMConversionPatterns(typeConverter, patterns);
-
-	if (failed(
-		applyFullConversion(getOperation(), target, std::move(patterns))))
-		signalPassFailure();
-}
-
 std::unique_ptr<mlir::Pass> linda::createLowerToAffinePass() {
   return std::make_unique<LowerToAffinePass>();
-}
-
-std::unique_ptr<mlir::Pass> linda::createLowerToLLVMPass() {
-  return std::make_unique<LowerToLLVMPass>();
 }

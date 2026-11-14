@@ -10,7 +10,6 @@ class Pass;
 namespace linda {
 
 std::unique_ptr<mlir::Pass> createLowerToAffinePass();
-std::unique_ptr<mlir::Pass> createLowerToLLVMPass();
 
 }
 
