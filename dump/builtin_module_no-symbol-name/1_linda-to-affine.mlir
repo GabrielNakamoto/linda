@@ -1,4 +1,4 @@
-// -----// IR Dump After (anonymous namespace)::LowerToAffinePass (linda-to-affine) ('builtin.module' operation) //----- //
+// -----// IR Dump After {anonymous}::LowerToAffinePass (linda-to-affine) ('builtin.module' operation) //----- //
 module {
   func.func @linda_program(%arg0: memref<32x64xf32>, %arg1: memref<32x64xf32>) {
     %alloc = memref.alloc() : memref<32x64xf32>

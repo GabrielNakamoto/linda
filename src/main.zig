@@ -15,9 +15,11 @@ pub fn main() !void {
   const a = try Tensor(f32).ones(&ctx, &.{32, 64});
   const b = try Tensor(f32).ones(&ctx, &.{32, 64});
 
-  const c = try a.add(b);
-  const d = try c.mul(a);
-  const z = try a.add(c);
-  const y = try z.mul(d);
-  try y.compile();
+  const c = try a.add(b); // 2.0
+  const d = try c.mul(a); // 2.0
+  const z = try a.add(c); // 3.0
+  const y = try z.mul(d); // 6.0
+
+  const res = try y.exec();
+  res.print();
 }

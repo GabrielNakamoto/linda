@@ -51,10 +51,10 @@ pub const Node = struct {
   inputs: []const *const Node = &.{},
   data: ?[]const u8 = null,
 
-  pub fn print(self: Node) void {
-    const head = if (self.data) |buf| buf[0..@min(20, buf.len)] else null;
-    std.debug.print("Tensor[{s}], dtype={any}, shape={any}, head={any}, inputs={d}\n",
-      .{@tagName(self.op), self.dtype, self.shape, head, self.inputs.len});
+  pub fn print(self: Node, comptime T: type) void {
+    const data = if (self.data) |bytes| std.mem.bytesAsSlice(T, bytes) else null;
+    std.debug.print("Tensor[{s}], dtype={any}, shape={any}, num_inputs={d}\n{any}",
+      .{@tagName(self.op), self.dtype, self.shape, self.inputs.len, data});
   }
 
   pub fn numel(self: Node) u64 { return helpers.numel(self.shape); }
@@ -86,10 +86,11 @@ pub fn Tensor(comptime T: type) type {
     ctx: *TensorCtx,
 
     fn shape(self: Self) []const u64 { return self.node.shape; }
+    pub fn print(self: Self) void { self.node.print(T); }
 
     pub fn ones(ctx: *TensorCtx, comptime new_shape: []const u64) !Self {
       const data = try ctx.arena.allocator().alloc(T, helpers.numel(new_shape));
-      @memset(data, 1.0);
+      for (data) |*x| x.* = 1.0;
 
       const node = try ctx.arena.allocator().create(Node);
       node.* = .{ .op = IROp.Buffer, .shape = new_shape, .data = std.mem.sliceAsBytes(data), .dtype = dtypeOf(T) };
@@ -128,7 +129,7 @@ pub fn Tensor(comptime T: type) type {
     pub fn reshape(self: *const Self, comptime new_shape: []const u64) !Self { return try self.unop(IROp.Reshape, new_shape); }
     pub fn sqrt(self: Self) !Self { return try self.unop(IROp.Sqrt, null); }
 
-    pub fn compile(self: *const Self) !void {
+    pub fn exec(self: *const Self) !Self {
       defer self.ctx.compile_arena.deinit();
 
       var tensor_schedule: std.ArrayList(*const Node) = .empty;
@@ -141,7 +142,12 @@ pub fn Tensor(comptime T: type) type {
       const mlirModule = try mlir_gen.compileTensorSchedule(tensor_schedule);
       const ptx = try backend.compileKernelModule(mlir_gen.ctx, mlirModule, self.ctx.targetArch, self.ctx.debug);
 
-      try runtime.launchCUDAKernel(T, self.ctx.compile_arena.allocator(), ptx, tensor_schedule);
+      const hostResult = try runtime.launchCUDAKernel(T, self.ctx.compile_arena.allocator(), ptx, tensor_schedule);
+
+      const new_node = try self.ctx.arena.allocator().create(Node);
+      new_node.* = self.node.*;
+      new_node.*.data = std.mem.sliceAsBytes(hostResult);
+      return .{ .node = new_node, .ctx = self.ctx };
     }
   };
 }

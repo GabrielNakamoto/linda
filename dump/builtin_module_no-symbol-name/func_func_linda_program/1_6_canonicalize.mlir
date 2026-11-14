@@ -1,9 +1,9 @@
-// -----// IR Dump After ConvertAffineForToGPUPass (convert-affine-for-to-gpu) ('func.func' operation: @kernel) //----- //
+// -----// IR Dump Before Canonicalizer (canonicalize) ('func.func' operation: @linda_program) //----- //
 #map = affine_map<(d0) -> (d0)>
 #map1 = affine_map<(d0) -> (d0 + 8)>
 #map2 = affine_map<(d0) -> (d0 + 16)>
 module {
-  func.func @kernel(%arg0: memref<32x64xf32>, %arg1: memref<32x64xf32>) {
+  func.func @linda_program(%arg0: memref<32x64xf32>, %arg1: memref<32x64xf32>) {
     %alloc = memref.alloc() : memref<32x64xf32>
     %alloc_0 = memref.alloc() : memref<32x64xf32>
     %alloc_1 = memref.alloc() : memref<32x64xf32>

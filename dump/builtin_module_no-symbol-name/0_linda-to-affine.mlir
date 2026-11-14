@@ -1,4 +1,4 @@
-// -----// IR Dump Before (anonymous namespace)::LowerToAffinePass (linda-to-affine) ('builtin.module' operation) //----- //
+// -----// IR Dump Before {anonymous}::LowerToAffinePass (linda-to-affine) ('builtin.module' operation) //----- //
 module {
   func.func @linda_program(%arg0: memref<32x64xf32>, %arg1: memref<32x64xf32>) {
     %0 = bufferization.to_tensor %arg0 : memref<32x64xf32> to tensor<32x64xf32>
