@@ -26,10 +26,8 @@ fn extractGpuBinary(module: c.MlirModule) !c.MlirStringRef {
   return c.mlirGPUObjectAttrGetObject(object);
 }
 
-pub fn compileKernelModule(mlirCtx: c.MlirContext, mlirModule: c.MlirModule, arch: Accelerator, debug: bool) !void {
+pub fn compileKernelModule(mlirCtx: c.MlirContext, mlirModule: c.MlirModule, arch: Accelerator, debug: bool) ![]const u8 {
   _ = arch;
-  // (1) finish converting gpu mlir diaslect to target specific host/device binaries
-  // and kernel launches; NVVM for ptx, ROCDL for AMD
   const pm = c.mlirPassManagerCreate(mlirCtx);
   //const gpuToArchPass = switch (arch.arch) {
     //.NV => c.mlirCreateConversionConvertGpuOpsToNVVMOps(),
@@ -53,9 +51,13 @@ pub fn compileKernelModule(mlirCtx: c.MlirContext, mlirModule: c.MlirModule, arc
 
   helpers.mlirAssertGood(c.mlirPassManagerRunOnOp(pm, c.mlirModuleGetOperation(mlirModule)));
 
-  // c.mlirOperationDump(c.mlirModuleGetOperation(mlirModule));
-
   const ptx = try extractGpuBinary(mlirModule);
   const slice = ptx.data[0..ptx.length];
-  std.debug.print("{s}\n", .{slice});
+
+  if (debug) {
+    c.mlirOperationDump(c.mlirModuleGetOperation(mlirModule));
+    std.debug.print("{s}\n", .{slice});
+  }
+
+  return slice;
 }
