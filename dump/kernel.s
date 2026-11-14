@@ -1,1546 +1,472 @@
-	.amdgcn_target "amdgcn-amd-amdhsa--gfx1100"
-	.amdhsa_code_object_version 6
-	.text
-	.globl	kernel
-	.p2align	2
-	.type	kernel,@function
-kernel:
-	s_waitcnt vmcnt(0) expcnt(0) lgkmcnt(0)
-	s_mov_b32 s0, s33
-	s_mov_b32 s33, s32
-	s_or_saveexec_b32 s1, -1
-	s_clause 0x1
-	scratch_store_b32 off, v59, s33 offset:44
-	scratch_store_b32 off, v60, s33 offset:48
-	s_mov_b32 exec_lo, s1
-	v_writelane_b32 v59, s0, 16
-	s_add_i32 s32, s32, 64
-	s_getpc_b64 s[0:1]
-	s_add_u32 s0, s0, malloc@gotpcrel32@lo+4
-	s_addc_u32 s1, s1, malloc@gotpcrel32@hi+12
-	s_clause 0xa
-	scratch_store_b32 off, v40, s33 offset:40
-	scratch_store_b32 off, v41, s33 offset:36
-	scratch_store_b32 off, v42, s33 offset:32
-	scratch_store_b32 off, v43, s33 offset:28
-	scratch_store_b32 off, v44, s33 offset:24
-	scratch_store_b32 off, v45, s33 offset:20
-	scratch_store_b32 off, v46, s33 offset:16
-	scratch_store_b32 off, v47, s33 offset:12
-	scratch_store_b32 off, v56, s33 offset:8
-	scratch_store_b32 off, v57, s33 offset:4
-	scratch_store_b32 off, v58, s33
-	v_dual_mov_b32 v46, v2 :: v_dual_mov_b32 v1, 0
-	v_writelane_b32 v59, s30, 0
-	v_mov_b32_e32 v0, 0x2000
-	v_dual_mov_b32 v58, v31 :: v_dual_mov_b32 v43, v17
-	v_dual_mov_b32 v42, v16 :: v_dual_mov_b32 v47, v3
-	v_writelane_b32 v59, s31, 1
-	v_writelane_b32 v59, s34, 2
-	v_writelane_b32 v59, s35, 3
-	s_mov_b64 s[34:35], s[10:11]
-	v_writelane_b32 v59, s36, 4
-	v_writelane_b32 v59, s37, 5
-	s_mov_b64 s[36:37], s[8:9]
-	v_writelane_b32 v59, s38, 6
-	v_writelane_b32 v59, s39, 7
-	s_mov_b64 s[38:39], s[6:7]
-	v_writelane_b32 v59, s48, 8
-	v_writelane_b32 v59, s49, 9
-	s_mov_b64 s[48:49], s[4:5]
-	v_writelane_b32 v59, s50, 10
-	s_mov_b32 s50, s15
-	v_writelane_b32 v59, s51, 11
-	s_mov_b32 s51, s14
-	v_writelane_b32 v59, s52, 12
-	s_mov_b32 s52, s13
-	v_writelane_b32 v59, s53, 13
-	s_mov_b32 s53, s12
-	v_writelane_b32 v59, s54, 14
-	v_writelane_b32 v59, s55, 15
-	s_load_b64 s[54:55], s[0:1], 0x0
-	s_waitcnt lgkmcnt(0)
-	s_swappc_b64 s[30:31], s[54:55]
-	v_dual_mov_b32 v40, v0 :: v_dual_mov_b32 v41, v1
-	v_dual_mov_b32 v31, v58 :: v_dual_mov_b32 v0, 0x2000
-	v_mov_b32_e32 v1, 0
-	s_mov_b64 s[4:5], s[48:49]
-	s_mov_b64 s[6:7], s[38:39]
-	s_mov_b64 s[8:9], s[36:37]
-	s_mov_b64 s[10:11], s[34:35]
-	s_mov_b32 s12, s53
-	s_mov_b32 s13, s52
-	s_mov_b32 s14, s51
-	s_mov_b32 s15, s50
-	s_swappc_b64 s[30:31], s[54:55]
-	v_dual_mov_b32 v44, v0 :: v_dual_mov_b32 v45, v1
-	v_dual_mov_b32 v31, v58 :: v_dual_mov_b32 v0, 0x2000
-	v_mov_b32_e32 v1, 0
-	s_mov_b64 s[4:5], s[48:49]
-	s_mov_b64 s[6:7], s[38:39]
-	s_mov_b64 s[8:9], s[36:37]
-	s_mov_b64 s[10:11], s[34:35]
-	s_mov_b32 s12, s53
-	s_mov_b32 s13, s52
-	s_mov_b32 s14, s51
-	s_mov_b32 s15, s50
-	s_swappc_b64 s[30:31], s[54:55]
-	v_dual_mov_b32 v56, v0 :: v_dual_mov_b32 v57, v1
-	v_dual_mov_b32 v31, v58 :: v_dual_mov_b32 v0, 0x2000
-	v_mov_b32_e32 v1, 0
-	s_mov_b64 s[4:5], s[48:49]
-	s_mov_b64 s[6:7], s[38:39]
-	s_mov_b64 s[8:9], s[36:37]
-	s_mov_b64 s[10:11], s[34:35]
-	s_mov_b32 s12, s53
-	s_mov_b32 s13, s52
-	s_mov_b32 s14, s51
-	s_mov_b32 s15, s50
-	s_swappc_b64 s[30:31], s[54:55]
-	v_dual_mov_b32 v2, v56 :: v_dual_mov_b32 v3, v57
-	v_dual_mov_b32 v4, v44 :: v_dual_mov_b32 v5, v45
-	v_dual_mov_b32 v7, v1 :: v_dual_mov_b32 v6, v0
-	v_dual_mov_b32 v8, v40 :: v_dual_mov_b32 v9, v41
-	s_mov_b64 s[0:1], 0
-.LBB0_1:
-	v_dual_mov_b32 v11, v3 :: v_dual_mov_b32 v10, v2
-	s_delay_alu instid0(VALU_DEP_3)
-	v_dual_mov_b32 v13, v7 :: v_dual_mov_b32 v12, v6
-	v_dual_mov_b32 v15, v5 :: v_dual_mov_b32 v14, v4
-	v_dual_mov_b32 v16, v42 :: v_dual_mov_b32 v17, v43
-	v_dual_mov_b32 v18, v46 :: v_dual_mov_b32 v19, v47
-	v_dual_mov_b32 v21, v9 :: v_dual_mov_b32 v20, v8
-	s_mov_b64 s[2:3], 0
-.LBB0_2:
-	s_mov_b64 s[4:5], 0
-.LBB0_3:
-	s_delay_alu instid0(VALU_DEP_2) | instid1(SALU_CYCLE_1)
-	v_add_co_u32 v22, vcc_lo, v18, s4
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, s5, v19, vcc_lo
-	v_add_co_u32 v24, vcc_lo, v16, s4
-	v_add_co_ci_u32_e64 v25, null, s5, v17, vcc_lo
-	flat_load_b32 v28, v[22:23]
-	flat_load_b32 v29, v[24:25]
-	v_add_co_u32 v26, vcc_lo, v12, s4
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_3) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v27, null, s5, v13, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v30, v28, v29
-	v_add_co_u32 v28, vcc_lo, v10, s4
-	v_add_co_ci_u32_e64 v29, null, s5, v11, vcc_lo
-	flat_store_b32 v[26:27], v30
-	flat_load_b32 v31, v[22:23]
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v30, v30, v31
-	flat_store_b32 v[28:29], v30
-	flat_load_b32 v32, v[26:27]
-	flat_load_b32 v33, v[22:23]
-	v_add_co_u32 v30, vcc_lo, v14, s4
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_3) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v31, null, s5, v15, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v38, v32, v33
-	v_add_co_u32 v32, vcc_lo, v20, s4
-	v_add_co_ci_u32_e64 v33, null, s5, v21, vcc_lo
-	flat_store_b32 v[30:31], v38
-	flat_load_b32 v39, v[28:29]
-	v_add_co_u32 v34, vcc_lo, v22, 4
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v35, null, 0, v23, vcc_lo
-	v_add_co_u32 v36, vcc_lo, v24, 4
-	v_add_co_ci_u32_e64 v37, null, 0, v25, vcc_lo
-	s_add_u32 s4, s4, 16
-	s_addc_u32 s5, s5, 0
-	s_delay_alu instid0(SALU_CYCLE_1)
-	s_cmp_lg_u64 s[4:5], 64
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v38, v38, v39
-	flat_store_b32 v[32:33], v38
-	flat_load_b32 v38, v[34:35]
-	flat_load_b32 v39, v[36:37]
-	v_add_co_u32 v36, vcc_lo, v26, 4
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_3) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v37, null, 0, v27, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v48, v38, v39
-	v_add_co_u32 v38, vcc_lo, v28, 4
-	v_add_co_ci_u32_e64 v39, null, 0, v29, vcc_lo
-	flat_store_b32 v[36:37], v48
-	flat_load_b32 v49, v[34:35]
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v48, v48, v49
-	flat_store_b32 v[38:39], v48
-	flat_load_b32 v36, v[36:37]
-	flat_load_b32 v37, v[34:35]
-	v_add_co_u32 v34, vcc_lo, v30, 4
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v35, null, 0, v31, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v48, v36, v37
-	flat_store_b32 v[34:35], v48
-	flat_load_b32 v49, v[38:39]
-	v_add_co_u32 v34, vcc_lo, v32, 4
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v35, null, 0, v33, vcc_lo
-	v_add_co_u32 v36, vcc_lo, v22, 8
-	v_add_co_ci_u32_e64 v37, null, 0, v23, vcc_lo
-	v_add_co_u32 v38, vcc_lo, v24, 8
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v39, null, 0, v25, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v48, v48, v49
-	flat_store_b32 v[34:35], v48
-	flat_load_b32 v48, v[36:37]
-	flat_load_b32 v38, v[38:39]
-	v_add_co_u32 v34, vcc_lo, v26, 8
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_3) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v35, null, 0, v27, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v48, v48, v38
-	v_add_co_u32 v38, vcc_lo, v28, 8
-	v_add_co_ci_u32_e64 v39, null, 0, v29, vcc_lo
-	flat_store_b32 v[34:35], v48
-	flat_load_b32 v49, v[36:37]
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v48, v48, v49
-	flat_store_b32 v[38:39], v48
-	flat_load_b32 v48, v[34:35]
-	flat_load_b32 v36, v[36:37]
-	v_add_co_u32 v34, vcc_lo, v30, 8
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v35, null, 0, v31, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v36, v48, v36
-	flat_store_b32 v[34:35], v36
-	flat_load_b32 v37, v[38:39]
-	v_add_co_u32 v34, vcc_lo, v32, 8
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v35, null, 0, v33, vcc_lo
-	v_add_co_u32 v22, vcc_lo, v22, 12
-	v_add_co_ci_u32_e64 v23, null, 0, v23, vcc_lo
-	v_add_co_u32 v24, vcc_lo, v24, 12
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v25, null, 0, v25, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v36, v36, v37
-	flat_store_b32 v[34:35], v36
-	flat_load_b32 v34, v[22:23]
-	flat_load_b32 v35, v[24:25]
-	v_add_co_u32 v24, vcc_lo, v26, 12
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v25, null, 0, v27, vcc_lo
-	v_add_co_u32 v26, vcc_lo, v28, 12
-	v_add_co_ci_u32_e64 v27, null, 0, v29, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v34, v34, v35
-	flat_store_b32 v[24:25], v34
-	flat_load_b32 v35, v[22:23]
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v28, v34, v35
-	flat_store_b32 v[26:27], v28
-	flat_load_b32 v24, v[24:25]
-	flat_load_b32 v25, v[22:23]
-	v_add_co_u32 v22, vcc_lo, v30, 12
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v31, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v24, v24, v25
-	flat_store_b32 v[22:23], v24
-	flat_load_b32 v25, v[26:27]
-	v_add_co_u32 v22, vcc_lo, v32, 12
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v33, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v24, v24, v25
-	flat_store_b32 v[22:23], v24
-	s_cbranch_scc1 .LBB0_3
-	s_movk_i32 s4, 0xffc0
-	s_mov_b32 s5, -1
-.LBB0_5:
-	v_add_co_u32 v28, vcc_lo, v18, s4
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v29, null, s5, v19, vcc_lo
-	v_add_co_u32 v30, vcc_lo, v16, s4
-	v_add_co_ci_u32_e64 v31, null, s5, v17, vcc_lo
-	s_delay_alu instid0(VALU_DEP_4) | instskip(NEXT) | instid1(VALU_DEP_1)
-	v_add_co_u32 v22, vcc_lo, 0x140, v28
-	v_add_co_ci_u32_e64 v23, null, 0, v29, vcc_lo
-	s_delay_alu instid0(VALU_DEP_4) | instskip(NEXT) | instid1(VALU_DEP_1)
-	v_add_co_u32 v24, vcc_lo, 0x140, v30
-	v_add_co_ci_u32_e64 v25, null, 0, v31, vcc_lo
-	flat_load_b32 v26, v[22:23]
-	flat_load_b32 v27, v[24:25]
-	v_add_co_u32 v32, vcc_lo, v12, s4
-	s_delay_alu instid0(VALU_DEP_1) | instskip(NEXT) | instid1(VALU_DEP_2)
-	v_add_co_ci_u32_e64 v33, null, s5, v13, vcc_lo
-	v_add_co_u32 v24, vcc_lo, 0x140, v32
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v25, null, 0, v33, vcc_lo
-	v_add_co_u32 v36, vcc_lo, v10, s4
-	v_add_co_ci_u32_e64 v37, null, s5, v11, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v34, v26, v27
-	s_delay_alu instid0(VALU_DEP_3) | instskip(NEXT) | instid1(VALU_DEP_1)
-	v_add_co_u32 v26, vcc_lo, 0x140, v36
-	v_add_co_ci_u32_e64 v27, null, 0, v37, vcc_lo
-	flat_store_b32 v[24:25], v34
-	flat_load_b32 v35, v[22:23]
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v34, v34, v35
-	flat_store_b32 v[26:27], v34
-	flat_load_b32 v24, v[24:25]
-	flat_load_b32 v25, v[22:23]
-	v_add_co_u32 v34, vcc_lo, v14, s4
-	s_delay_alu instid0(VALU_DEP_1) | instskip(NEXT) | instid1(VALU_DEP_2)
-	v_add_co_ci_u32_e64 v35, null, s5, v15, vcc_lo
-	v_add_co_u32 v22, vcc_lo, 0x140, v34
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v35, vcc_lo
-	v_add_co_u32 v48, vcc_lo, v20, s4
-	v_add_co_ci_u32_e64 v49, null, s5, v21, vcc_lo
-	s_add_u32 s4, s4, 16
-	s_addc_u32 s5, s5, 0
-	s_delay_alu instid0(SALU_CYCLE_1)
-	s_cmp_lg_u64 s[4:5], 0
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v38, v24, v25
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v39, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x140, v48
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v49, vcc_lo
-	v_add_co_u32 v24, vcc_lo, 0x144, v28
-	v_add_co_ci_u32_e64 v25, null, 0, v29, vcc_lo
-	v_add_co_u32 v26, vcc_lo, 0x144, v30
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v27, null, 0, v31, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v38, v38, v39
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v38, v[24:25]
-	flat_load_b32 v26, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x144, v32
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_3) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v33, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v38, v38, v26
-	v_add_co_u32 v26, vcc_lo, 0x144, v36
-	v_add_co_ci_u32_e64 v27, null, 0, v37, vcc_lo
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v39, v[24:25]
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v38, v38, v39
-	flat_store_b32 v[26:27], v38
-	flat_load_b32 v38, v[22:23]
-	flat_load_b32 v24, v[24:25]
-	v_add_co_u32 v22, vcc_lo, 0x144, v34
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v35, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v38, v38, v24
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v39, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x144, v48
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v49, vcc_lo
-	v_add_co_u32 v24, vcc_lo, 0x148, v28
-	v_add_co_ci_u32_e64 v25, null, 0, v29, vcc_lo
-	v_add_co_u32 v26, vcc_lo, 0x148, v30
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v27, null, 0, v31, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v38, v38, v39
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v38, v[24:25]
-	flat_load_b32 v26, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x148, v32
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_3) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v33, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v38, v38, v26
-	v_add_co_u32 v26, vcc_lo, 0x148, v36
-	v_add_co_ci_u32_e64 v27, null, 0, v37, vcc_lo
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v39, v[24:25]
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v38, v38, v39
-	flat_store_b32 v[26:27], v38
-	flat_load_b32 v38, v[22:23]
-	flat_load_b32 v24, v[24:25]
-	v_add_co_u32 v22, vcc_lo, 0x148, v34
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v35, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v38, v38, v24
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v27, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x148, v48
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v49, vcc_lo
-	v_add_co_u32 v24, vcc_lo, 0x14c, v28
-	v_add_co_ci_u32_e64 v25, null, 0, v29, vcc_lo
-	v_add_co_u32 v26, vcc_lo, 0x14c, v30
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v28, v38, v27
-	v_add_co_ci_u32_e64 v27, null, 0, v31, vcc_lo
-	flat_store_b32 v[22:23], v28
-	flat_load_b32 v28, v[24:25]
-	flat_load_b32 v26, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x14c, v32
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_3) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v33, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v28, v28, v26
-	v_add_co_u32 v26, vcc_lo, 0x14c, v36
-	v_add_co_ci_u32_e64 v27, null, 0, v37, vcc_lo
-	flat_store_b32 v[22:23], v28
-	flat_load_b32 v29, v[24:25]
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v28, v28, v29
-	flat_store_b32 v[26:27], v28
-	flat_load_b32 v28, v[22:23]
-	flat_load_b32 v24, v[24:25]
-	v_add_co_u32 v22, vcc_lo, 0x14c, v34
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v35, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v24, v28, v24
-	flat_store_b32 v[22:23], v24
-	flat_load_b32 v25, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x14c, v48
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v49, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v24, v24, v25
-	flat_store_b32 v[22:23], v24
-	s_cbranch_scc1 .LBB0_5
-	s_movk_i32 s4, 0xffc0
-	s_mov_b32 s5, -1
-.LBB0_7:
-	v_add_co_u32 v28, vcc_lo, v18, s4
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v29, null, s5, v19, vcc_lo
-	v_add_co_u32 v30, vcc_lo, v16, s4
-	v_add_co_ci_u32_e64 v31, null, s5, v17, vcc_lo
-	s_delay_alu instid0(VALU_DEP_4) | instskip(NEXT) | instid1(VALU_DEP_1)
-	v_add_co_u32 v22, vcc_lo, 0x240, v28
-	v_add_co_ci_u32_e64 v23, null, 0, v29, vcc_lo
-	s_delay_alu instid0(VALU_DEP_4) | instskip(NEXT) | instid1(VALU_DEP_1)
-	v_add_co_u32 v24, vcc_lo, 0x240, v30
-	v_add_co_ci_u32_e64 v25, null, 0, v31, vcc_lo
-	flat_load_b32 v26, v[22:23]
-	flat_load_b32 v27, v[24:25]
-	v_add_co_u32 v32, vcc_lo, v12, s4
-	s_delay_alu instid0(VALU_DEP_1) | instskip(NEXT) | instid1(VALU_DEP_2)
-	v_add_co_ci_u32_e64 v33, null, s5, v13, vcc_lo
-	v_add_co_u32 v24, vcc_lo, 0x240, v32
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v25, null, 0, v33, vcc_lo
-	v_add_co_u32 v36, vcc_lo, v10, s4
-	v_add_co_ci_u32_e64 v37, null, s5, v11, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v34, v26, v27
-	s_delay_alu instid0(VALU_DEP_3) | instskip(NEXT) | instid1(VALU_DEP_1)
-	v_add_co_u32 v26, vcc_lo, 0x240, v36
-	v_add_co_ci_u32_e64 v27, null, 0, v37, vcc_lo
-	flat_store_b32 v[24:25], v34
-	flat_load_b32 v35, v[22:23]
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v34, v34, v35
-	flat_store_b32 v[26:27], v34
-	flat_load_b32 v24, v[24:25]
-	flat_load_b32 v25, v[22:23]
-	v_add_co_u32 v34, vcc_lo, v14, s4
-	s_delay_alu instid0(VALU_DEP_1) | instskip(NEXT) | instid1(VALU_DEP_2)
-	v_add_co_ci_u32_e64 v35, null, s5, v15, vcc_lo
-	v_add_co_u32 v22, vcc_lo, 0x240, v34
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v35, vcc_lo
-	v_add_co_u32 v48, vcc_lo, v20, s4
-	v_add_co_ci_u32_e64 v49, null, s5, v21, vcc_lo
-	s_add_u32 s4, s4, 16
-	s_addc_u32 s5, s5, 0
-	s_delay_alu instid0(SALU_CYCLE_1)
-	s_cmp_lg_u64 s[4:5], 0
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v38, v24, v25
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v39, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x240, v48
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v49, vcc_lo
-	v_add_co_u32 v24, vcc_lo, 0x244, v28
-	v_add_co_ci_u32_e64 v25, null, 0, v29, vcc_lo
-	v_add_co_u32 v26, vcc_lo, 0x244, v30
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v27, null, 0, v31, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v38, v38, v39
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v38, v[24:25]
-	flat_load_b32 v26, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x244, v32
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_3) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v33, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v38, v38, v26
-	v_add_co_u32 v26, vcc_lo, 0x244, v36
-	v_add_co_ci_u32_e64 v27, null, 0, v37, vcc_lo
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v39, v[24:25]
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v38, v38, v39
-	flat_store_b32 v[26:27], v38
-	flat_load_b32 v38, v[22:23]
-	flat_load_b32 v24, v[24:25]
-	v_add_co_u32 v22, vcc_lo, 0x244, v34
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v35, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v38, v38, v24
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v39, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x244, v48
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v49, vcc_lo
-	v_add_co_u32 v24, vcc_lo, 0x248, v28
-	v_add_co_ci_u32_e64 v25, null, 0, v29, vcc_lo
-	v_add_co_u32 v26, vcc_lo, 0x248, v30
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v27, null, 0, v31, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v38, v38, v39
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v38, v[24:25]
-	flat_load_b32 v26, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x248, v32
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_3) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v33, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v38, v38, v26
-	v_add_co_u32 v26, vcc_lo, 0x248, v36
-	v_add_co_ci_u32_e64 v27, null, 0, v37, vcc_lo
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v39, v[24:25]
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v38, v38, v39
-	flat_store_b32 v[26:27], v38
-	flat_load_b32 v38, v[22:23]
-	flat_load_b32 v24, v[24:25]
-	v_add_co_u32 v22, vcc_lo, 0x248, v34
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v35, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v38, v38, v24
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v27, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x248, v48
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v49, vcc_lo
-	v_add_co_u32 v24, vcc_lo, 0x24c, v28
-	v_add_co_ci_u32_e64 v25, null, 0, v29, vcc_lo
-	v_add_co_u32 v26, vcc_lo, 0x24c, v30
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v28, v38, v27
-	v_add_co_ci_u32_e64 v27, null, 0, v31, vcc_lo
-	flat_store_b32 v[22:23], v28
-	flat_load_b32 v28, v[24:25]
-	flat_load_b32 v26, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x24c, v32
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_3) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v33, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v28, v28, v26
-	v_add_co_u32 v26, vcc_lo, 0x24c, v36
-	v_add_co_ci_u32_e64 v27, null, 0, v37, vcc_lo
-	flat_store_b32 v[22:23], v28
-	flat_load_b32 v29, v[24:25]
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v28, v28, v29
-	flat_store_b32 v[26:27], v28
-	flat_load_b32 v28, v[22:23]
-	flat_load_b32 v24, v[24:25]
-	v_add_co_u32 v22, vcc_lo, 0x24c, v34
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v35, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v24, v28, v24
-	flat_store_b32 v[22:23], v24
-	flat_load_b32 v25, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x24c, v48
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v49, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v24, v24, v25
-	flat_store_b32 v[22:23], v24
-	s_cbranch_scc1 .LBB0_7
-	s_movk_i32 s4, 0xffc0
-	s_mov_b32 s5, -1
-.LBB0_9:
-	v_add_co_u32 v28, vcc_lo, v18, s4
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v29, null, s5, v19, vcc_lo
-	v_add_co_u32 v30, vcc_lo, v16, s4
-	v_add_co_ci_u32_e64 v31, null, s5, v17, vcc_lo
-	s_delay_alu instid0(VALU_DEP_4) | instskip(NEXT) | instid1(VALU_DEP_1)
-	v_add_co_u32 v22, vcc_lo, 0x340, v28
-	v_add_co_ci_u32_e64 v23, null, 0, v29, vcc_lo
-	s_delay_alu instid0(VALU_DEP_4) | instskip(NEXT) | instid1(VALU_DEP_1)
-	v_add_co_u32 v24, vcc_lo, 0x340, v30
-	v_add_co_ci_u32_e64 v25, null, 0, v31, vcc_lo
-	flat_load_b32 v26, v[22:23]
-	flat_load_b32 v27, v[24:25]
-	v_add_co_u32 v32, vcc_lo, v12, s4
-	s_delay_alu instid0(VALU_DEP_1) | instskip(NEXT) | instid1(VALU_DEP_2)
-	v_add_co_ci_u32_e64 v33, null, s5, v13, vcc_lo
-	v_add_co_u32 v24, vcc_lo, 0x340, v32
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v25, null, 0, v33, vcc_lo
-	v_add_co_u32 v36, vcc_lo, v10, s4
-	v_add_co_ci_u32_e64 v37, null, s5, v11, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v34, v26, v27
-	s_delay_alu instid0(VALU_DEP_3) | instskip(NEXT) | instid1(VALU_DEP_1)
-	v_add_co_u32 v26, vcc_lo, 0x340, v36
-	v_add_co_ci_u32_e64 v27, null, 0, v37, vcc_lo
-	flat_store_b32 v[24:25], v34
-	flat_load_b32 v35, v[22:23]
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v34, v34, v35
-	flat_store_b32 v[26:27], v34
-	flat_load_b32 v24, v[24:25]
-	flat_load_b32 v25, v[22:23]
-	v_add_co_u32 v34, vcc_lo, v14, s4
-	s_delay_alu instid0(VALU_DEP_1) | instskip(NEXT) | instid1(VALU_DEP_2)
-	v_add_co_ci_u32_e64 v35, null, s5, v15, vcc_lo
-	v_add_co_u32 v22, vcc_lo, 0x340, v34
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v35, vcc_lo
-	v_add_co_u32 v48, vcc_lo, v20, s4
-	v_add_co_ci_u32_e64 v49, null, s5, v21, vcc_lo
-	s_add_u32 s4, s4, 16
-	s_addc_u32 s5, s5, 0
-	s_delay_alu instid0(SALU_CYCLE_1)
-	s_cmp_lg_u64 s[4:5], 0
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v38, v24, v25
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v39, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x340, v48
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v49, vcc_lo
-	v_add_co_u32 v24, vcc_lo, 0x344, v28
-	v_add_co_ci_u32_e64 v25, null, 0, v29, vcc_lo
-	v_add_co_u32 v26, vcc_lo, 0x344, v30
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v27, null, 0, v31, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v38, v38, v39
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v38, v[24:25]
-	flat_load_b32 v26, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x344, v32
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_3) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v33, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v38, v38, v26
-	v_add_co_u32 v26, vcc_lo, 0x344, v36
-	v_add_co_ci_u32_e64 v27, null, 0, v37, vcc_lo
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v39, v[24:25]
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v38, v38, v39
-	flat_store_b32 v[26:27], v38
-	flat_load_b32 v38, v[22:23]
-	flat_load_b32 v24, v[24:25]
-	v_add_co_u32 v22, vcc_lo, 0x344, v34
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v35, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v38, v38, v24
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v39, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x344, v48
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v49, vcc_lo
-	v_add_co_u32 v24, vcc_lo, 0x348, v28
-	v_add_co_ci_u32_e64 v25, null, 0, v29, vcc_lo
-	v_add_co_u32 v26, vcc_lo, 0x348, v30
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v27, null, 0, v31, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v38, v38, v39
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v38, v[24:25]
-	flat_load_b32 v26, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x348, v32
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_3) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v33, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v38, v38, v26
-	v_add_co_u32 v26, vcc_lo, 0x348, v36
-	v_add_co_ci_u32_e64 v27, null, 0, v37, vcc_lo
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v39, v[24:25]
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v38, v38, v39
-	flat_store_b32 v[26:27], v38
-	flat_load_b32 v38, v[22:23]
-	flat_load_b32 v24, v[24:25]
-	v_add_co_u32 v22, vcc_lo, 0x348, v34
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v35, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v38, v38, v24
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v27, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x348, v48
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v49, vcc_lo
-	v_add_co_u32 v24, vcc_lo, 0x34c, v28
-	v_add_co_ci_u32_e64 v25, null, 0, v29, vcc_lo
-	v_add_co_u32 v26, vcc_lo, 0x34c, v30
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v28, v38, v27
-	v_add_co_ci_u32_e64 v27, null, 0, v31, vcc_lo
-	flat_store_b32 v[22:23], v28
-	flat_load_b32 v28, v[24:25]
-	flat_load_b32 v26, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x34c, v32
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_3) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v33, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v28, v28, v26
-	v_add_co_u32 v26, vcc_lo, 0x34c, v36
-	v_add_co_ci_u32_e64 v27, null, 0, v37, vcc_lo
-	flat_store_b32 v[22:23], v28
-	flat_load_b32 v29, v[24:25]
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v28, v28, v29
-	flat_store_b32 v[26:27], v28
-	flat_load_b32 v28, v[22:23]
-	flat_load_b32 v24, v[24:25]
-	v_add_co_u32 v22, vcc_lo, 0x34c, v34
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v35, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v24, v28, v24
-	flat_store_b32 v[22:23], v24
-	flat_load_b32 v25, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x34c, v48
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v49, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v24, v24, v25
-	flat_store_b32 v[22:23], v24
-	s_cbranch_scc1 .LBB0_9
-	s_movk_i32 s4, 0xffc0
-	s_mov_b32 s5, -1
-.LBB0_11:
-	v_add_co_u32 v28, vcc_lo, v18, s4
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v29, null, s5, v19, vcc_lo
-	v_add_co_u32 v30, vcc_lo, v16, s4
-	v_add_co_ci_u32_e64 v31, null, s5, v17, vcc_lo
-	s_delay_alu instid0(VALU_DEP_4) | instskip(NEXT) | instid1(VALU_DEP_1)
-	v_add_co_u32 v22, vcc_lo, 0x440, v28
-	v_add_co_ci_u32_e64 v23, null, 0, v29, vcc_lo
-	s_delay_alu instid0(VALU_DEP_4) | instskip(NEXT) | instid1(VALU_DEP_1)
-	v_add_co_u32 v24, vcc_lo, 0x440, v30
-	v_add_co_ci_u32_e64 v25, null, 0, v31, vcc_lo
-	flat_load_b32 v26, v[22:23]
-	flat_load_b32 v27, v[24:25]
-	v_add_co_u32 v32, vcc_lo, v12, s4
-	s_delay_alu instid0(VALU_DEP_1) | instskip(NEXT) | instid1(VALU_DEP_2)
-	v_add_co_ci_u32_e64 v33, null, s5, v13, vcc_lo
-	v_add_co_u32 v24, vcc_lo, 0x440, v32
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v25, null, 0, v33, vcc_lo
-	v_add_co_u32 v36, vcc_lo, v10, s4
-	v_add_co_ci_u32_e64 v37, null, s5, v11, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v34, v26, v27
-	s_delay_alu instid0(VALU_DEP_3) | instskip(NEXT) | instid1(VALU_DEP_1)
-	v_add_co_u32 v26, vcc_lo, 0x440, v36
-	v_add_co_ci_u32_e64 v27, null, 0, v37, vcc_lo
-	flat_store_b32 v[24:25], v34
-	flat_load_b32 v35, v[22:23]
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v34, v34, v35
-	flat_store_b32 v[26:27], v34
-	flat_load_b32 v24, v[24:25]
-	flat_load_b32 v25, v[22:23]
-	v_add_co_u32 v34, vcc_lo, v14, s4
-	s_delay_alu instid0(VALU_DEP_1) | instskip(NEXT) | instid1(VALU_DEP_2)
-	v_add_co_ci_u32_e64 v35, null, s5, v15, vcc_lo
-	v_add_co_u32 v22, vcc_lo, 0x440, v34
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v35, vcc_lo
-	v_add_co_u32 v48, vcc_lo, v20, s4
-	v_add_co_ci_u32_e64 v49, null, s5, v21, vcc_lo
-	s_add_u32 s4, s4, 16
-	s_addc_u32 s5, s5, 0
-	s_delay_alu instid0(SALU_CYCLE_1)
-	s_cmp_lg_u64 s[4:5], 0
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v38, v24, v25
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v39, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x440, v48
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v49, vcc_lo
-	v_add_co_u32 v24, vcc_lo, 0x444, v28
-	v_add_co_ci_u32_e64 v25, null, 0, v29, vcc_lo
-	v_add_co_u32 v26, vcc_lo, 0x444, v30
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v27, null, 0, v31, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v38, v38, v39
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v38, v[24:25]
-	flat_load_b32 v26, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x444, v32
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_3) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v33, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v38, v38, v26
-	v_add_co_u32 v26, vcc_lo, 0x444, v36
-	v_add_co_ci_u32_e64 v27, null, 0, v37, vcc_lo
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v39, v[24:25]
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v38, v38, v39
-	flat_store_b32 v[26:27], v38
-	flat_load_b32 v38, v[22:23]
-	flat_load_b32 v24, v[24:25]
-	v_add_co_u32 v22, vcc_lo, 0x444, v34
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v35, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v38, v38, v24
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v39, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x444, v48
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v49, vcc_lo
-	v_add_co_u32 v24, vcc_lo, 0x448, v28
-	v_add_co_ci_u32_e64 v25, null, 0, v29, vcc_lo
-	v_add_co_u32 v26, vcc_lo, 0x448, v30
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v27, null, 0, v31, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v38, v38, v39
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v38, v[24:25]
-	flat_load_b32 v26, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x448, v32
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_3) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v33, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v38, v38, v26
-	v_add_co_u32 v26, vcc_lo, 0x448, v36
-	v_add_co_ci_u32_e64 v27, null, 0, v37, vcc_lo
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v39, v[24:25]
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v38, v38, v39
-	flat_store_b32 v[26:27], v38
-	flat_load_b32 v38, v[22:23]
-	flat_load_b32 v24, v[24:25]
-	v_add_co_u32 v22, vcc_lo, 0x448, v34
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v35, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v38, v38, v24
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v27, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x448, v48
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v49, vcc_lo
-	v_add_co_u32 v24, vcc_lo, 0x44c, v28
-	v_add_co_ci_u32_e64 v25, null, 0, v29, vcc_lo
-	v_add_co_u32 v26, vcc_lo, 0x44c, v30
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v28, v38, v27
-	v_add_co_ci_u32_e64 v27, null, 0, v31, vcc_lo
-	flat_store_b32 v[22:23], v28
-	flat_load_b32 v28, v[24:25]
-	flat_load_b32 v26, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x44c, v32
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_3) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v33, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v28, v28, v26
-	v_add_co_u32 v26, vcc_lo, 0x44c, v36
-	v_add_co_ci_u32_e64 v27, null, 0, v37, vcc_lo
-	flat_store_b32 v[22:23], v28
-	flat_load_b32 v29, v[24:25]
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v28, v28, v29
-	flat_store_b32 v[26:27], v28
-	flat_load_b32 v28, v[22:23]
-	flat_load_b32 v24, v[24:25]
-	v_add_co_u32 v22, vcc_lo, 0x44c, v34
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v35, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v24, v28, v24
-	flat_store_b32 v[22:23], v24
-	flat_load_b32 v25, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x44c, v48
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v49, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v24, v24, v25
-	flat_store_b32 v[22:23], v24
-	s_cbranch_scc1 .LBB0_11
-	s_movk_i32 s4, 0xffc0
-	s_mov_b32 s5, -1
-.LBB0_13:
-	v_add_co_u32 v28, vcc_lo, v18, s4
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v29, null, s5, v19, vcc_lo
-	v_add_co_u32 v30, vcc_lo, v16, s4
-	v_add_co_ci_u32_e64 v31, null, s5, v17, vcc_lo
-	s_delay_alu instid0(VALU_DEP_4) | instskip(NEXT) | instid1(VALU_DEP_1)
-	v_add_co_u32 v22, vcc_lo, 0x540, v28
-	v_add_co_ci_u32_e64 v23, null, 0, v29, vcc_lo
-	s_delay_alu instid0(VALU_DEP_4) | instskip(NEXT) | instid1(VALU_DEP_1)
-	v_add_co_u32 v24, vcc_lo, 0x540, v30
-	v_add_co_ci_u32_e64 v25, null, 0, v31, vcc_lo
-	flat_load_b32 v26, v[22:23]
-	flat_load_b32 v27, v[24:25]
-	v_add_co_u32 v32, vcc_lo, v12, s4
-	s_delay_alu instid0(VALU_DEP_1) | instskip(NEXT) | instid1(VALU_DEP_2)
-	v_add_co_ci_u32_e64 v33, null, s5, v13, vcc_lo
-	v_add_co_u32 v24, vcc_lo, 0x540, v32
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v25, null, 0, v33, vcc_lo
-	v_add_co_u32 v36, vcc_lo, v10, s4
-	v_add_co_ci_u32_e64 v37, null, s5, v11, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v34, v26, v27
-	s_delay_alu instid0(VALU_DEP_3) | instskip(NEXT) | instid1(VALU_DEP_1)
-	v_add_co_u32 v26, vcc_lo, 0x540, v36
-	v_add_co_ci_u32_e64 v27, null, 0, v37, vcc_lo
-	flat_store_b32 v[24:25], v34
-	flat_load_b32 v35, v[22:23]
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v34, v34, v35
-	flat_store_b32 v[26:27], v34
-	flat_load_b32 v24, v[24:25]
-	flat_load_b32 v25, v[22:23]
-	v_add_co_u32 v34, vcc_lo, v14, s4
-	s_delay_alu instid0(VALU_DEP_1) | instskip(NEXT) | instid1(VALU_DEP_2)
-	v_add_co_ci_u32_e64 v35, null, s5, v15, vcc_lo
-	v_add_co_u32 v22, vcc_lo, 0x540, v34
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v35, vcc_lo
-	v_add_co_u32 v48, vcc_lo, v20, s4
-	v_add_co_ci_u32_e64 v49, null, s5, v21, vcc_lo
-	s_add_u32 s4, s4, 16
-	s_addc_u32 s5, s5, 0
-	s_delay_alu instid0(SALU_CYCLE_1)
-	s_cmp_lg_u64 s[4:5], 0
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v38, v24, v25
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v39, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x540, v48
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v49, vcc_lo
-	v_add_co_u32 v24, vcc_lo, 0x544, v28
-	v_add_co_ci_u32_e64 v25, null, 0, v29, vcc_lo
-	v_add_co_u32 v26, vcc_lo, 0x544, v30
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v27, null, 0, v31, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v38, v38, v39
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v38, v[24:25]
-	flat_load_b32 v26, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x544, v32
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_3) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v33, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v38, v38, v26
-	v_add_co_u32 v26, vcc_lo, 0x544, v36
-	v_add_co_ci_u32_e64 v27, null, 0, v37, vcc_lo
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v39, v[24:25]
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v38, v38, v39
-	flat_store_b32 v[26:27], v38
-	flat_load_b32 v38, v[22:23]
-	flat_load_b32 v24, v[24:25]
-	v_add_co_u32 v22, vcc_lo, 0x544, v34
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v35, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v38, v38, v24
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v39, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x544, v48
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v49, vcc_lo
-	v_add_co_u32 v24, vcc_lo, 0x548, v28
-	v_add_co_ci_u32_e64 v25, null, 0, v29, vcc_lo
-	v_add_co_u32 v26, vcc_lo, 0x548, v30
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v27, null, 0, v31, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v38, v38, v39
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v38, v[24:25]
-	flat_load_b32 v26, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x548, v32
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_3) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v33, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v38, v38, v26
-	v_add_co_u32 v26, vcc_lo, 0x548, v36
-	v_add_co_ci_u32_e64 v27, null, 0, v37, vcc_lo
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v39, v[24:25]
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v38, v38, v39
-	flat_store_b32 v[26:27], v38
-	flat_load_b32 v38, v[22:23]
-	flat_load_b32 v24, v[24:25]
-	v_add_co_u32 v22, vcc_lo, 0x548, v34
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v35, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v38, v38, v24
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v27, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x548, v48
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v49, vcc_lo
-	v_add_co_u32 v24, vcc_lo, 0x54c, v28
-	v_add_co_ci_u32_e64 v25, null, 0, v29, vcc_lo
-	v_add_co_u32 v26, vcc_lo, 0x54c, v30
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v28, v38, v27
-	v_add_co_ci_u32_e64 v27, null, 0, v31, vcc_lo
-	flat_store_b32 v[22:23], v28
-	flat_load_b32 v28, v[24:25]
-	flat_load_b32 v26, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x54c, v32
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_3) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v33, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v28, v28, v26
-	v_add_co_u32 v26, vcc_lo, 0x54c, v36
-	v_add_co_ci_u32_e64 v27, null, 0, v37, vcc_lo
-	flat_store_b32 v[22:23], v28
-	flat_load_b32 v29, v[24:25]
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v28, v28, v29
-	flat_store_b32 v[26:27], v28
-	flat_load_b32 v28, v[22:23]
-	flat_load_b32 v24, v[24:25]
-	v_add_co_u32 v22, vcc_lo, 0x54c, v34
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v35, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v24, v28, v24
-	flat_store_b32 v[22:23], v24
-	flat_load_b32 v25, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x54c, v48
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v49, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v24, v24, v25
-	flat_store_b32 v[22:23], v24
-	s_cbranch_scc1 .LBB0_13
-	s_movk_i32 s4, 0xffc0
-	s_mov_b32 s5, -1
-.LBB0_15:
-	v_add_co_u32 v28, vcc_lo, v18, s4
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v29, null, s5, v19, vcc_lo
-	v_add_co_u32 v30, vcc_lo, v16, s4
-	v_add_co_ci_u32_e64 v31, null, s5, v17, vcc_lo
-	s_delay_alu instid0(VALU_DEP_4) | instskip(NEXT) | instid1(VALU_DEP_1)
-	v_add_co_u32 v22, vcc_lo, 0x640, v28
-	v_add_co_ci_u32_e64 v23, null, 0, v29, vcc_lo
-	s_delay_alu instid0(VALU_DEP_4) | instskip(NEXT) | instid1(VALU_DEP_1)
-	v_add_co_u32 v24, vcc_lo, 0x640, v30
-	v_add_co_ci_u32_e64 v25, null, 0, v31, vcc_lo
-	flat_load_b32 v26, v[22:23]
-	flat_load_b32 v27, v[24:25]
-	v_add_co_u32 v32, vcc_lo, v12, s4
-	s_delay_alu instid0(VALU_DEP_1) | instskip(NEXT) | instid1(VALU_DEP_2)
-	v_add_co_ci_u32_e64 v33, null, s5, v13, vcc_lo
-	v_add_co_u32 v24, vcc_lo, 0x640, v32
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v25, null, 0, v33, vcc_lo
-	v_add_co_u32 v36, vcc_lo, v10, s4
-	v_add_co_ci_u32_e64 v37, null, s5, v11, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v34, v26, v27
-	s_delay_alu instid0(VALU_DEP_3) | instskip(NEXT) | instid1(VALU_DEP_1)
-	v_add_co_u32 v26, vcc_lo, 0x640, v36
-	v_add_co_ci_u32_e64 v27, null, 0, v37, vcc_lo
-	flat_store_b32 v[24:25], v34
-	flat_load_b32 v35, v[22:23]
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v34, v34, v35
-	flat_store_b32 v[26:27], v34
-	flat_load_b32 v24, v[24:25]
-	flat_load_b32 v25, v[22:23]
-	v_add_co_u32 v34, vcc_lo, v14, s4
-	s_delay_alu instid0(VALU_DEP_1) | instskip(NEXT) | instid1(VALU_DEP_2)
-	v_add_co_ci_u32_e64 v35, null, s5, v15, vcc_lo
-	v_add_co_u32 v22, vcc_lo, 0x640, v34
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v35, vcc_lo
-	v_add_co_u32 v48, vcc_lo, v20, s4
-	v_add_co_ci_u32_e64 v49, null, s5, v21, vcc_lo
-	s_add_u32 s4, s4, 16
-	s_addc_u32 s5, s5, 0
-	s_delay_alu instid0(SALU_CYCLE_1)
-	s_cmp_lg_u64 s[4:5], 0
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v38, v24, v25
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v39, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x640, v48
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v49, vcc_lo
-	v_add_co_u32 v24, vcc_lo, 0x644, v28
-	v_add_co_ci_u32_e64 v25, null, 0, v29, vcc_lo
-	v_add_co_u32 v26, vcc_lo, 0x644, v30
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v27, null, 0, v31, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v38, v38, v39
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v38, v[24:25]
-	flat_load_b32 v26, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x644, v32
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_3) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v33, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v38, v38, v26
-	v_add_co_u32 v26, vcc_lo, 0x644, v36
-	v_add_co_ci_u32_e64 v27, null, 0, v37, vcc_lo
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v39, v[24:25]
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v38, v38, v39
-	flat_store_b32 v[26:27], v38
-	flat_load_b32 v38, v[22:23]
-	flat_load_b32 v24, v[24:25]
-	v_add_co_u32 v22, vcc_lo, 0x644, v34
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v35, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v38, v38, v24
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v39, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x644, v48
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v49, vcc_lo
-	v_add_co_u32 v24, vcc_lo, 0x648, v28
-	v_add_co_ci_u32_e64 v25, null, 0, v29, vcc_lo
-	v_add_co_u32 v26, vcc_lo, 0x648, v30
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v27, null, 0, v31, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v38, v38, v39
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v38, v[24:25]
-	flat_load_b32 v26, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x648, v32
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_3) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v33, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v38, v38, v26
-	v_add_co_u32 v26, vcc_lo, 0x648, v36
-	v_add_co_ci_u32_e64 v27, null, 0, v37, vcc_lo
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v39, v[24:25]
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v38, v38, v39
-	flat_store_b32 v[26:27], v38
-	flat_load_b32 v38, v[22:23]
-	flat_load_b32 v24, v[24:25]
-	v_add_co_u32 v22, vcc_lo, 0x648, v34
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v35, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v38, v38, v24
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v27, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x648, v48
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v49, vcc_lo
-	v_add_co_u32 v24, vcc_lo, 0x64c, v28
-	v_add_co_ci_u32_e64 v25, null, 0, v29, vcc_lo
-	v_add_co_u32 v26, vcc_lo, 0x64c, v30
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v28, v38, v27
-	v_add_co_ci_u32_e64 v27, null, 0, v31, vcc_lo
-	flat_store_b32 v[22:23], v28
-	flat_load_b32 v28, v[24:25]
-	flat_load_b32 v26, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x64c, v32
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_3) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v33, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v28, v28, v26
-	v_add_co_u32 v26, vcc_lo, 0x64c, v36
-	v_add_co_ci_u32_e64 v27, null, 0, v37, vcc_lo
-	flat_store_b32 v[22:23], v28
-	flat_load_b32 v29, v[24:25]
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v28, v28, v29
-	flat_store_b32 v[26:27], v28
-	flat_load_b32 v28, v[22:23]
-	flat_load_b32 v24, v[24:25]
-	v_add_co_u32 v22, vcc_lo, 0x64c, v34
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v35, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v24, v28, v24
-	flat_store_b32 v[22:23], v24
-	flat_load_b32 v25, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x64c, v48
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v49, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v24, v24, v25
-	flat_store_b32 v[22:23], v24
-	s_cbranch_scc1 .LBB0_15
-	s_movk_i32 s4, 0xffc0
-	s_mov_b32 s5, -1
-.LBB0_17:
-	v_add_co_u32 v28, vcc_lo, v18, s4
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v29, null, s5, v19, vcc_lo
-	v_add_co_u32 v30, vcc_lo, v16, s4
-	v_add_co_ci_u32_e64 v31, null, s5, v17, vcc_lo
-	s_delay_alu instid0(VALU_DEP_4) | instskip(NEXT) | instid1(VALU_DEP_1)
-	v_add_co_u32 v22, vcc_lo, 0x740, v28
-	v_add_co_ci_u32_e64 v23, null, 0, v29, vcc_lo
-	s_delay_alu instid0(VALU_DEP_4) | instskip(NEXT) | instid1(VALU_DEP_1)
-	v_add_co_u32 v24, vcc_lo, 0x740, v30
-	v_add_co_ci_u32_e64 v25, null, 0, v31, vcc_lo
-	flat_load_b32 v26, v[22:23]
-	flat_load_b32 v27, v[24:25]
-	v_add_co_u32 v32, vcc_lo, v12, s4
-	s_delay_alu instid0(VALU_DEP_1) | instskip(NEXT) | instid1(VALU_DEP_2)
-	v_add_co_ci_u32_e64 v33, null, s5, v13, vcc_lo
-	v_add_co_u32 v24, vcc_lo, 0x740, v32
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v25, null, 0, v33, vcc_lo
-	v_add_co_u32 v36, vcc_lo, v10, s4
-	v_add_co_ci_u32_e64 v37, null, s5, v11, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v34, v26, v27
-	s_delay_alu instid0(VALU_DEP_3) | instskip(NEXT) | instid1(VALU_DEP_1)
-	v_add_co_u32 v26, vcc_lo, 0x740, v36
-	v_add_co_ci_u32_e64 v27, null, 0, v37, vcc_lo
-	flat_store_b32 v[24:25], v34
-	flat_load_b32 v35, v[22:23]
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v34, v34, v35
-	flat_store_b32 v[26:27], v34
-	flat_load_b32 v24, v[24:25]
-	flat_load_b32 v25, v[22:23]
-	v_add_co_u32 v34, vcc_lo, v14, s4
-	s_delay_alu instid0(VALU_DEP_1) | instskip(NEXT) | instid1(VALU_DEP_2)
-	v_add_co_ci_u32_e64 v35, null, s5, v15, vcc_lo
-	v_add_co_u32 v22, vcc_lo, 0x740, v34
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v35, vcc_lo
-	v_add_co_u32 v48, vcc_lo, v20, s4
-	v_add_co_ci_u32_e64 v49, null, s5, v21, vcc_lo
-	s_add_u32 s4, s4, 16
-	s_addc_u32 s5, s5, 0
-	s_delay_alu instid0(SALU_CYCLE_1)
-	s_cmp_lg_u64 s[4:5], 0
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v38, v24, v25
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v39, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x740, v48
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v49, vcc_lo
-	v_add_co_u32 v24, vcc_lo, 0x744, v28
-	v_add_co_ci_u32_e64 v25, null, 0, v29, vcc_lo
-	v_add_co_u32 v26, vcc_lo, 0x744, v30
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v27, null, 0, v31, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v38, v38, v39
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v38, v[24:25]
-	flat_load_b32 v26, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x744, v32
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_3) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v33, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v38, v38, v26
-	v_add_co_u32 v26, vcc_lo, 0x744, v36
-	v_add_co_ci_u32_e64 v27, null, 0, v37, vcc_lo
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v39, v[24:25]
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v38, v38, v39
-	flat_store_b32 v[26:27], v38
-	flat_load_b32 v38, v[22:23]
-	flat_load_b32 v24, v[24:25]
-	v_add_co_u32 v22, vcc_lo, 0x744, v34
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v35, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v38, v38, v24
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v39, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x744, v48
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v49, vcc_lo
-	v_add_co_u32 v24, vcc_lo, 0x748, v28
-	v_add_co_ci_u32_e64 v25, null, 0, v29, vcc_lo
-	v_add_co_u32 v26, vcc_lo, 0x748, v30
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v27, null, 0, v31, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v38, v38, v39
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v38, v[24:25]
-	flat_load_b32 v26, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x748, v32
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_3) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v33, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v38, v38, v26
-	v_add_co_u32 v26, vcc_lo, 0x748, v36
-	v_add_co_ci_u32_e64 v27, null, 0, v37, vcc_lo
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v39, v[24:25]
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v38, v38, v39
-	flat_store_b32 v[26:27], v38
-	flat_load_b32 v38, v[22:23]
-	flat_load_b32 v24, v[24:25]
-	v_add_co_u32 v22, vcc_lo, 0x748, v34
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v35, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v38, v38, v24
-	flat_store_b32 v[22:23], v38
-	flat_load_b32 v27, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x748, v48
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v49, vcc_lo
-	v_add_co_u32 v24, vcc_lo, 0x74c, v28
-	v_add_co_ci_u32_e64 v25, null, 0, v29, vcc_lo
-	v_add_co_u32 v26, vcc_lo, 0x74c, v30
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v28, v38, v27
-	v_add_co_ci_u32_e64 v27, null, 0, v31, vcc_lo
-	flat_store_b32 v[22:23], v28
-	flat_load_b32 v28, v[24:25]
-	flat_load_b32 v26, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x74c, v32
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_3) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v33, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v28, v28, v26
-	v_add_co_u32 v26, vcc_lo, 0x74c, v36
-	v_add_co_ci_u32_e64 v27, null, 0, v37, vcc_lo
-	flat_store_b32 v[22:23], v28
-	flat_load_b32 v29, v[24:25]
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_add_f32_e32 v28, v28, v29
-	flat_store_b32 v[26:27], v28
-	flat_load_b32 v28, v[22:23]
-	flat_load_b32 v24, v[24:25]
-	v_add_co_u32 v22, vcc_lo, 0x74c, v34
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v35, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v24, v28, v24
-	flat_store_b32 v[22:23], v24
-	flat_load_b32 v25, v[26:27]
-	v_add_co_u32 v22, vcc_lo, 0x74c, v48
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v23, null, 0, v49, vcc_lo
-	s_waitcnt vmcnt(0) lgkmcnt(0)
-	v_mul_f32_e32 v24, v24, v25
-	flat_store_b32 v[22:23], v24
-	s_cbranch_scc1 .LBB0_17
-	v_add_co_u32 v20, vcc_lo, v20, 64
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v21, null, 0, v21, vcc_lo
-	v_add_co_u32 v18, vcc_lo, v18, 64
-	v_add_co_ci_u32_e64 v19, null, 0, v19, vcc_lo
-	v_add_co_u32 v16, vcc_lo, v16, 64
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v17, null, 0, v17, vcc_lo
-	v_add_co_u32 v14, vcc_lo, v14, 64
-	v_add_co_ci_u32_e64 v15, null, 0, v15, vcc_lo
-	v_add_co_u32 v12, vcc_lo, v12, 64
-	s_add_u32 s4, s2, 16
-	v_cmp_lt_u64_e64 s2, s[2:3], 48
-	v_add_co_ci_u32_e64 v13, null, 0, v13, vcc_lo
-	v_add_co_u32 v10, vcc_lo, v10, 64
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v11, null, 0, v11, vcc_lo
-	s_addc_u32 s5, s3, 0
-	s_and_b32 vcc_lo, exec_lo, s2
-	s_mov_b64 s[2:3], s[4:5]
-	s_cbranch_vccnz .LBB0_2
-	v_add_co_u32 v8, vcc_lo, 0x800, v8
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v9, null, 0, v9, vcc_lo
-	v_add_co_u32 v46, vcc_lo, 0x800, v46
-	v_add_co_ci_u32_e64 v47, null, 0, v47, vcc_lo
-	v_add_co_u32 v42, vcc_lo, 0x800, v42
-	s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v43, null, 0, v43, vcc_lo
-	v_add_co_u32 v4, vcc_lo, 0x800, v4
-	v_add_co_ci_u32_e64 v5, null, 0, v5, vcc_lo
-	v_add_co_u32 v6, vcc_lo, 0x800, v6
-	s_add_u32 s2, s0, 8
-	v_cmp_lt_u64_e64 s0, s[0:1], 24
-	v_add_co_ci_u32_e64 v7, null, 0, v7, vcc_lo
-	v_add_co_u32 v2, vcc_lo, 0x800, v2
-	s_delay_alu instid0(VALU_DEP_1)
-	v_add_co_ci_u32_e64 v3, null, 0, v3, vcc_lo
-	s_addc_u32 s3, s1, 0
-	s_and_b32 vcc_lo, exec_lo, s0
-	s_mov_b64 s[0:1], s[2:3]
-	s_cbranch_vccnz .LBB0_1
-	s_getpc_b64 s[0:1]
-	s_add_u32 s0, s0, free@gotpcrel32@lo+4
-	s_addc_u32 s1, s1, free@gotpcrel32@hi+12
-	v_mov_b32_e32 v31, v58
-	s_load_b64 s[0:1], s[0:1], 0x0
-	s_mov_b64 s[4:5], s[48:49]
-	s_mov_b64 s[6:7], s[38:39]
-	s_mov_b64 s[8:9], s[36:37]
-	s_mov_b64 s[10:11], s[34:35]
-	s_mov_b32 s12, s53
-	s_mov_b32 s13, s52
-	s_mov_b32 s14, s51
-	s_mov_b32 s15, s50
-	s_waitcnt lgkmcnt(0)
-	v_writelane_b32 v60, s0, 0
-	v_writelane_b32 v60, s1, 1
-	s_delay_alu instid0(VALU_DEP_1)
-	v_readlane_b32 s0, v60, 0
-	v_readlane_b32 s1, v60, 1
-	s_swappc_b64 s[30:31], s[0:1]
-	v_readlane_b32 s0, v60, 0
-	v_dual_mov_b32 v31, v58 :: v_dual_mov_b32 v0, v56
-	v_mov_b32_e32 v1, v57
-	v_readlane_b32 s1, v60, 1
-	s_mov_b64 s[4:5], s[48:49]
-	s_mov_b64 s[6:7], s[38:39]
-	s_mov_b64 s[8:9], s[36:37]
-	s_mov_b64 s[10:11], s[34:35]
-	s_mov_b32 s12, s53
-	s_mov_b32 s13, s52
-	s_mov_b32 s14, s51
-	s_mov_b32 s15, s50
-	s_swappc_b64 s[30:31], s[0:1]
-	v_readlane_b32 s0, v60, 0
-	v_dual_mov_b32 v31, v58 :: v_dual_mov_b32 v0, v44
-	v_mov_b32_e32 v1, v45
-	v_readlane_b32 s1, v60, 1
-	s_mov_b64 s[4:5], s[48:49]
-	s_mov_b64 s[6:7], s[38:39]
-	s_mov_b64 s[8:9], s[36:37]
-	s_mov_b64 s[10:11], s[34:35]
-	s_mov_b32 s12, s53
-	s_mov_b32 s13, s52
-	s_mov_b32 s14, s51
-	s_mov_b32 s15, s50
-	s_swappc_b64 s[30:31], s[0:1]
-	v_dual_mov_b32 v31, v58 :: v_dual_mov_b32 v0, v40
-	v_mov_b32_e32 v1, v41
-	s_clause 0xa
-	scratch_load_b32 v58, off, s33
-	scratch_load_b32 v57, off, s33 offset:4
-	scratch_load_b32 v56, off, s33 offset:8
-	scratch_load_b32 v47, off, s33 offset:12
-	scratch_load_b32 v46, off, s33 offset:16
-	scratch_load_b32 v45, off, s33 offset:20
-	scratch_load_b32 v44, off, s33 offset:24
-	scratch_load_b32 v43, off, s33 offset:28
-	scratch_load_b32 v42, off, s33 offset:32
-	scratch_load_b32 v41, off, s33 offset:36
-	scratch_load_b32 v40, off, s33 offset:40
-	v_readlane_b32 s0, v60, 0
-	s_mov_b64 s[4:5], s[48:49]
-	s_mov_b64 s[6:7], s[38:39]
-	s_mov_b64 s[8:9], s[36:37]
-	s_mov_b64 s[10:11], s[34:35]
-	s_mov_b32 s12, s53
-	s_mov_b32 s13, s52
-	s_mov_b32 s14, s51
-	s_mov_b32 s15, s50
-	v_readlane_b32 s1, v60, 1
-	v_readlane_b32 s55, v59, 15
-	v_readlane_b32 s54, v59, 14
-	v_readlane_b32 s53, v59, 13
-	v_readlane_b32 s52, v59, 12
-	v_readlane_b32 s51, v59, 11
-	v_readlane_b32 s50, v59, 10
-	v_readlane_b32 s49, v59, 9
-	v_readlane_b32 s48, v59, 8
-	v_readlane_b32 s39, v59, 7
-	v_readlane_b32 s38, v59, 6
-	v_readlane_b32 s37, v59, 5
-	v_readlane_b32 s36, v59, 4
-	v_readlane_b32 s35, v59, 3
-	v_readlane_b32 s34, v59, 2
-	v_readlane_b32 s31, v59, 1
-	v_readlane_b32 s30, v59, 0
-	s_mov_b32 s32, s33
-	v_readlane_b32 s2, v59, 16
-	s_or_saveexec_b32 s3, -1
-	s_clause 0x1
-	scratch_load_b32 v59, off, s33 offset:44
-	scratch_load_b32 v60, off, s33 offset:48
-	s_mov_b32 exec_lo, s3
-	s_mov_b32 s33, s2
-	s_setpc_b64 s[0:1]
-.Lfunc_end0:
-	.size	kernel, .Lfunc_end0-kernel
+//
+// Generated by LLVM NVPTX Back-End
+//
 
-	.set kernel.num_vgpr, max(61, amdgpu.max_num_vgpr)
-	.set kernel.num_agpr, max(0, amdgpu.max_num_agpr)
-	.set kernel.numbered_sgpr, max(56, amdgpu.max_num_sgpr)
-	.set kernel.num_named_barrier, max(0, amdgpu.max_num_named_barrier)
-	.set kernel.private_seg_size, 64
-	.set kernel.uses_vcc, 1
-	.set kernel.uses_flat_scratch, 1
-	.set kernel.has_dyn_sized_stack, 1
-	.set kernel.has_recursion, 1
-	.set kernel.has_indirect_call, 1
-	.p2alignl 7, 3214868480
-	.fill 96, 4, 3214868480
-	.section	.AMDGPU.gpr_maximums,"",@progbits
-	.set amdgpu.max_num_vgpr, 61
-	.set amdgpu.max_num_agpr, 0
-	.set amdgpu.max_num_sgpr, 56
-	.set amdgpu.max_num_named_barrier, 0
-	.text
-	.section	".note.GNU-stack","",@progbits
-	.amdgpu_metadata
----
-amdhsa.kernels:  []
-amdhsa.target:   amdgcn-amd-amdhsa--gfx1100
-amdhsa.version:
-  - 1
-  - 2
-...
+.version 8.7
+.target sm_120
+.address_size 32
 
-	.end_amdgpu_metadata
+	// .globl	linda_program
+.extern .func free
+(
+	.param .b32 free_param_0
+)
+;
+.extern .func  (.param .b32 func_retval0) malloc
+(
+	.param .b64 malloc_param_0
+)
+;
+.func linda_program_kernel_load
+()
+;
+.extern .func  (.param .b32 func_retval0) mgpuModuleLoadJIT
+(
+	.param .b32 mgpuModuleLoadJIT_param_0,
+	.param .b32 mgpuModuleLoadJIT_param_1
+)
+;
+.func linda_program_kernel_unload
+()
+;
+.extern .func mgpuModuleUnload
+(
+	.param .b32 mgpuModuleUnload_param_0
+)
+;
+.extern .func  (.param .b32 func_retval0) mgpuModuleGetFunction
+(
+	.param .b32 mgpuModuleGetFunction_param_0,
+	.param .b32 mgpuModuleGetFunction_param_1
+)
+;
+.extern .func  (.param .b32 func_retval0) mgpuStreamCreate
+()
+;
+.extern .func mgpuLaunchKernel
+(
+	.param .b32 mgpuLaunchKernel_param_0,
+	.param .b64 mgpuLaunchKernel_param_1,
+	.param .b64 mgpuLaunchKernel_param_2,
+	.param .b64 mgpuLaunchKernel_param_3,
+	.param .b64 mgpuLaunchKernel_param_4,
+	.param .b64 mgpuLaunchKernel_param_5,
+	.param .b64 mgpuLaunchKernel_param_6,
+	.param .b32 mgpuLaunchKernel_param_7,
+	.param .b32 mgpuLaunchKernel_param_8,
+	.param .b32 mgpuLaunchKernel_param_9,
+	.param .b32 mgpuLaunchKernel_param_10,
+	.param .b64 mgpuLaunchKernel_param_11
+)
+;
+.extern .func mgpuStreamSynchronize
+(
+	.param .b32 mgpuStreamSynchronize_param_0
+)
+;
+.extern .func mgpuStreamDestroy
+(
+	.param .b32 mgpuStreamDestroy_param_0
+)
+;
+.global .align 8 .b8 linda_program_kernel_binary[4862] = {47, 47, 10, 47, 47, 32, 71, 101, 110, 101, 114, 97, 116, 101, 100, 32, 98, 121, 32, 76, 76, 86, 77, 32, 78, 86, 80, 84, 88, 32, 66, 97, 99, 107, 45, 69, 110, 100, 10, 47, 47, 10, 10, 46, 118, 101, 114, 115, 105, 111, 110, 32, 56, 46, 55, 10, 46, 116, 97, 114, 103, 101, 116, 32, 115, 109, 95, 49, 50, 48, 10, 46, 97, 100, 100, 114, 101, 115, 115, 95, 115, 105, 122, 101, 32, 54, 52, 10, 10, 9, 47, 47, 32, 46, 103, 108, 111, 98, 108, 9, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 10, 10, 46, 118, 105, 115, 105, 98, 108, 101, 32, 46, 101, 110, 116, 114, 121, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 40, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 48, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 49, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 50, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 51, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 46, 112, 116, 114, 32, 46, 97, 108, 105, 103, 110, 32, 49, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 52, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 46, 112, 116, 114, 32, 46, 97, 108, 105, 103, 110, 32, 49, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 53, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 54, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 55, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 56, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 57, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 49, 48, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 46, 112, 116, 114, 32, 46, 97, 108, 105, 103, 110, 32, 49, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 49, 49, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 46, 112, 116, 114, 32, 46, 97, 108, 105, 103, 110, 32, 49, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 49, 50, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 49, 51, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 49, 52, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 49, 53, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 49, 54, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 49, 55, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 46, 112, 116, 114, 32, 46, 97, 108, 105, 103, 110, 32, 49, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 49, 56, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 46, 112, 116, 114, 32, 46, 97, 108, 105, 103, 110, 32, 49, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 49, 57, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 50, 48, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 50, 49, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 50, 50, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 50, 51, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 50, 52, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 46, 112, 116, 114, 32, 46, 97, 108, 105, 103, 110, 32, 49, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 50, 53, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 46, 112, 116, 114, 32, 46, 97, 108, 105, 103, 110, 32, 49, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 50, 54, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 50, 55, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 50, 56, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 50, 57, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 51, 48, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 51, 49, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 46, 112, 116, 114, 32, 46, 97, 108, 105, 103, 110, 32, 49, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 51, 50, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 46, 112, 116, 114, 32, 46, 97, 108, 105, 103, 110, 32, 49, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 51, 51, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 51, 52, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 51, 53, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 51, 54, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 51, 55, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 51, 56, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 46, 112, 116, 114, 32, 46, 97, 108, 105, 103, 110, 32, 49, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 51, 57, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 46, 112, 116, 114, 32, 46, 97, 108, 105, 103, 110, 32, 49, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 52, 48, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 52, 49, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 52, 50, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 52, 51, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 52, 52, 44, 10, 9, 46, 112, 97, 114, 97, 109, 32, 46, 117, 54, 52, 32, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 52, 53, 10, 41, 10, 123, 10, 9, 46, 114, 101, 103, 32, 46, 112, 114, 101, 100, 32, 9, 37, 112, 60, 53, 62, 59, 10, 9, 46, 114, 101, 103, 32, 46, 98, 51, 50, 32, 9, 37, 114, 60, 49, 51, 62, 59, 10, 9, 46, 114, 101, 103, 32, 46, 98, 54, 52, 32, 9, 37, 114, 100, 60, 51, 57, 62, 59, 10, 10, 9, 108, 100, 46, 112, 97, 114, 97, 109, 46, 98, 54, 52, 32, 9, 37, 114, 100, 49, 48, 44, 32, 91, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 48, 93, 59, 10, 9, 108, 100, 46, 112, 97, 114, 97, 109, 46, 98, 54, 52, 32, 9, 37, 114, 100, 49, 49, 44, 32, 91, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 53, 93, 59, 10, 9, 99, 118, 116, 97, 46, 116, 111, 46, 103, 108, 111, 98, 97, 108, 46, 117, 54, 52, 32, 9, 37, 114, 100, 49, 44, 32, 37, 114, 100, 49, 49, 59, 10, 9, 108, 100, 46, 112, 97, 114, 97, 109, 46, 98, 54, 52, 32, 9, 37, 114, 100, 49, 50, 44, 32, 91, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 49, 93, 59, 10, 9, 108, 100, 46, 112, 97, 114, 97, 109, 46, 98, 54, 52, 32, 9, 37, 114, 100, 49, 51, 44, 32, 91, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 49, 50, 93, 59, 10, 9, 99, 118, 116, 97, 46, 116, 111, 46, 103, 108, 111, 98, 97, 108, 46, 117, 54, 52, 32, 9, 37, 114, 100, 50, 44, 32, 37, 114, 100, 49, 51, 59, 10, 9, 108, 100, 46, 112, 97, 114, 97, 109, 46, 98, 54, 52, 32, 9, 37, 114, 100, 49, 53, 44, 32, 91, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 49, 57, 93, 59, 10, 9, 99, 118, 116, 97, 46, 116, 111, 46, 103, 108, 111, 98, 97, 108, 46, 117, 54, 52, 32, 9, 37, 114, 100, 51, 44, 32, 37, 114, 100, 49, 53, 59, 10, 9, 108, 100, 46, 112, 97, 114, 97, 109, 46, 98, 54, 52, 32, 9, 37, 114, 100, 49, 55, 44, 32, 91, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 50, 54, 93, 59, 10, 9, 99, 118, 116, 97, 46, 116, 111, 46, 103, 108, 111, 98, 97, 108, 46, 117, 54, 52, 32, 9, 37, 114, 100, 52, 44, 32, 37, 114, 100, 49, 55, 59, 10, 9, 108, 100, 46, 112, 97, 114, 97, 109, 46, 98, 54, 52, 32, 9, 37, 114, 100, 49, 56, 44, 32, 91, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 51, 51, 93, 59, 10, 9, 99, 118, 116, 97, 46, 116, 111, 46, 103, 108, 111, 98, 97, 108, 46, 117, 54, 52, 32, 9, 37, 114, 100, 53, 44, 32, 37, 114, 100, 49, 56, 59, 10, 9, 108, 100, 46, 112, 97, 114, 97, 109, 46, 98, 54, 52, 32, 9, 37, 114, 100, 49, 57, 44, 32, 91, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 52, 48, 93, 59, 10, 9, 99, 118, 116, 97, 46, 116, 111, 46, 103, 108, 111, 98, 97, 108, 46, 117, 54, 52, 32, 9, 37, 114, 100, 54, 44, 32, 37, 114, 100, 49, 57, 59, 10, 9, 109, 111, 118, 46, 117, 51, 50, 32, 9, 37, 114, 49, 44, 32, 37, 99, 116, 97, 105, 100, 46, 120, 59, 10, 9, 99, 118, 116, 46, 117, 54, 52, 46, 117, 51, 50, 32, 9, 37, 114, 100, 50, 48, 44, 32, 37, 114, 49, 59, 10, 9, 109, 97, 100, 46, 108, 111, 46, 115, 54, 52, 32, 9, 37, 114, 100, 51, 55, 44, 32, 37, 114, 100, 49, 48, 44, 32, 37, 114, 100, 50, 48, 44, 32, 37, 114, 100, 49, 50, 59, 10, 9, 115, 101, 116, 112, 46, 103, 116, 46, 115, 54, 52, 32, 9, 37, 112, 49, 44, 32, 37, 114, 100, 51, 55, 44, 32, 57, 50, 50, 51, 51, 55, 50, 48, 51, 54, 56, 53, 52, 55, 55, 53, 55, 57, 57, 59, 10, 9, 64, 37, 112, 49, 32, 98, 114, 97, 32, 9, 36, 76, 95, 95, 66, 66, 48, 95, 54, 59, 10, 9, 108, 100, 46, 112, 97, 114, 97, 109, 46, 98, 54, 52, 32, 9, 37, 114, 100, 49, 52, 44, 32, 91, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 50, 93, 59, 10, 9, 108, 100, 46, 112, 97, 114, 97, 109, 46, 98, 54, 52, 32, 9, 37, 114, 100, 49, 54, 44, 32, 91, 108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108, 95, 112, 97, 114, 97, 109, 95, 51, 93, 59, 10, 9, 109, 111, 118, 46, 117, 51, 50, 32, 9, 37, 114, 50, 44, 32, 37, 116, 105, 100, 46, 120, 59, 10, 9, 99, 118, 116, 46, 117, 54, 52, 46, 117, 51, 50, 32, 9, 37, 114, 100, 50, 49, 44, 32, 37, 114, 50, 59, 10, 9, 109, 97, 100, 46, 108, 111, 46, 115, 54, 52, 32, 9, 37, 114, 100, 55, 44, 32, 37, 114, 100, 49, 52, 44, 32, 37, 114, 100, 50, 49, 44, 32, 37, 114, 100, 49, 54, 59, 10, 9, 97, 100, 100, 46, 115, 54, 52, 32, 9, 37, 114, 100, 56, 44, 32, 37, 114, 100, 51, 55, 44, 32, 55, 59, 10, 9, 115, 104, 108, 46, 98, 54, 52, 32, 9, 37, 114, 100, 50, 50, 44, 32, 37, 114, 100, 51, 55, 44, 32, 54, 59, 10, 9, 97, 100, 100, 46, 115, 54, 52, 32, 9, 37, 114, 100, 50, 51, 44, 32, 37, 114, 100, 55, 44, 32, 37, 114, 100, 50, 50, 59, 10, 9, 115, 104, 108, 46, 98, 54, 52, 32, 9, 37, 114, 100, 50, 52, 44, 32, 37, 114, 100, 50, 51, 44, 32, 50, 59, 10, 9, 97, 100, 100, 46, 115, 54, 52, 32, 9, 37, 114, 100, 51, 54, 44, 32, 37, 114, 100, 49, 44, 32, 37, 114, 100, 50, 52, 59, 10, 9, 97, 100, 100, 46, 115, 54, 52, 32, 9, 37, 114, 100, 51, 53, 44, 32, 37, 114, 100, 50, 44, 32, 37, 114, 100, 50, 52, 59, 10, 9, 97, 100, 100, 46, 115, 54, 52, 32, 9, 37, 114, 100, 51, 52, 44, 32, 37, 114, 100, 51, 44, 32, 37, 114, 100, 50, 52, 59, 10, 9, 97, 100, 100, 46, 115, 54, 52, 32, 9, 37, 114, 100, 51, 51, 44, 32, 37, 114, 100, 52, 44, 32, 37, 114, 100, 50, 52, 59, 10, 9, 97, 100, 100, 46, 115, 54, 52, 32, 9, 37, 114, 100, 51, 50, 44, 32, 37, 114, 100, 53, 44, 32, 37, 114, 100, 50, 52, 59, 10, 9, 97, 100, 100, 46, 115, 54, 52, 32, 9, 37, 114, 100, 51, 49, 44, 32, 37, 114, 100, 54, 44, 32, 37, 114, 100, 50, 52, 59, 10, 9, 115, 101, 116, 112, 46, 103, 116, 46, 115, 54, 52, 32, 9, 37, 112, 50, 44, 32, 37, 114, 100, 55, 44, 32, 57, 50, 50, 51, 51, 55, 50, 48, 51, 54, 56, 53, 52, 55, 55, 53, 55, 57, 49, 59, 10, 9, 98, 114, 97, 46, 117, 110, 105, 32, 9, 36, 76, 95, 95, 66, 66, 48, 95, 50, 59, 10, 36, 76, 95, 95, 66, 66, 48, 95, 53, 58, 10, 9, 97, 100, 100, 46, 115, 54, 52, 32, 9, 37, 114, 100, 57, 44, 32, 37, 114, 100, 51, 55, 44, 32, 49, 59, 10, 9, 97, 100, 100, 46, 115, 54, 52, 32, 9, 37, 114, 100, 51, 54, 44, 32, 37, 114, 100, 51, 54, 44, 32, 50, 53, 54, 59, 10, 9, 97, 100, 100, 46, 115, 54, 52, 32, 9, 37, 114, 100, 51, 53, 44, 32, 37, 114, 100, 51, 53, 44, 32, 50, 53, 54, 59, 10, 9, 97, 100, 100, 46, 115, 54, 52, 32, 9, 37, 114, 100, 51, 52, 44, 32, 37, 114, 100, 51, 52, 44, 32, 50, 53, 54, 59, 10, 9, 97, 100, 100, 46, 115, 54, 52, 32, 9, 37, 114, 100, 51, 51, 44, 32, 37, 114, 100, 51, 51, 44, 32, 50, 53, 54, 59, 10, 9, 97, 100, 100, 46, 115, 54, 52, 32, 9, 37, 114, 100, 51, 50, 44, 32, 37, 114, 100, 51, 50, 44, 32, 50, 53, 54, 59, 10, 9, 97, 100, 100, 46, 115, 54, 52, 32, 9, 37, 114, 100, 51, 49, 44, 32, 37, 114, 100, 51, 49, 44, 32, 50, 53, 54, 59, 10, 9, 115, 101, 116, 112, 46, 110, 101, 46, 98, 54, 52, 32, 9, 37, 112, 52, 44, 32, 37, 114, 100, 51, 55, 44, 32, 37, 114, 100, 56, 59, 10, 9, 109, 111, 118, 46, 98, 54, 52, 32, 9, 37, 114, 100, 51, 55, 44, 32, 37, 114, 100, 57, 59, 10, 9, 64, 37, 112, 52, 32, 98, 114, 97, 32, 9, 36, 76, 95, 95, 66, 66, 48, 95, 50, 59, 10, 9, 98, 114, 97, 46, 117, 110, 105, 32, 9, 36, 76, 95, 95, 66, 66, 48, 95, 54, 59, 10, 36, 76, 95, 95, 66, 66, 48, 95, 50, 58, 10, 9, 64, 37, 112, 50, 32, 98, 114, 97, 32, 9, 36, 76, 95, 95, 66, 66, 48, 95, 53, 59, 10, 9, 109, 111, 118, 46, 98, 54, 52, 32, 9, 37, 114, 100, 51, 56, 44, 32, 48, 59, 10, 36, 76, 95, 95, 66, 66, 48, 95, 52, 58, 10, 9, 97, 100, 100, 46, 115, 54, 52, 32, 9, 37, 114, 100, 50, 53, 44, 32, 37, 114, 100, 51, 54, 44, 32, 37, 114, 100, 51, 56, 59, 10, 9, 108, 100, 46, 103, 108, 111, 98, 97, 108, 46, 98, 51, 50, 32, 9, 37, 114, 51, 44, 32, 91, 37, 114, 100, 50, 53, 93, 59, 10, 9, 97, 100, 100, 46, 115, 54, 52, 32, 9, 37, 114, 100, 50, 54, 44, 32, 37, 114, 100, 51, 53, 44, 32, 37, 114, 100, 51, 56, 59, 10, 9, 108, 100, 46, 103, 108, 111, 98, 97, 108, 46, 98, 51, 50, 32, 9, 37, 114, 52, 44, 32, 91, 37, 114, 100, 50, 54, 93, 59, 10, 9, 97, 100, 100, 46, 114, 110, 46, 102, 51, 50, 32, 9, 37, 114, 53, 44, 32, 37, 114, 51, 44, 32, 37, 114, 52, 59, 10, 9, 97, 100, 100, 46, 115, 54, 52, 32, 9, 37, 114, 100, 50, 55, 44, 32, 37, 114, 100, 51, 52, 44, 32, 37, 114, 100, 51, 56, 59, 10, 9, 115, 116, 46, 103, 108, 111, 98, 97, 108, 46, 98, 51, 50, 32, 9, 91, 37, 114, 100, 50, 55, 93, 44, 32, 37, 114, 53, 59, 10, 9, 108, 100, 46, 103, 108, 111, 98, 97, 108, 46, 98, 51, 50, 32, 9, 37, 114, 54, 44, 32, 91, 37, 114, 100, 50, 53, 93, 59, 10, 9, 97, 100, 100, 46, 114, 110, 46, 102, 51, 50, 32, 9, 37, 114, 55, 44, 32, 37, 114, 53, 44, 32, 37, 114, 54, 59, 10, 9, 97, 100, 100, 46, 115, 54, 52, 32, 9, 37, 114, 100, 50, 56, 44, 32, 37, 114, 100, 51, 51, 44, 32, 37, 114, 100, 51, 56, 59, 10, 9, 115, 116, 46, 103, 108, 111, 98, 97, 108, 46, 98, 51, 50, 32, 9, 91, 37, 114, 100, 50, 56, 93, 44, 32, 37, 114, 55, 59, 10, 9, 108, 100, 46, 103, 108, 111, 98, 97, 108, 46, 98, 51, 50, 32, 9, 37, 114, 56, 44, 32, 91, 37, 114, 100, 50, 55, 93, 59, 10, 9, 108, 100, 46, 103, 108, 111, 98, 97, 108, 46, 98, 51, 50, 32, 9, 37, 114, 57, 44, 32, 91, 37, 114, 100, 50, 53, 93, 59, 10, 9, 109, 117, 108, 46, 114, 110, 46, 102, 51, 50, 32, 9, 37, 114, 49, 48, 44, 32, 37, 114, 56, 44, 32, 37, 114, 57, 59, 10, 9, 97, 100, 100, 46, 115, 54, 52, 32, 9, 37, 114, 100, 50, 57, 44, 32, 37, 114, 100, 51, 50, 44, 32, 37, 114, 100, 51, 56, 59, 10, 9, 115, 116, 46, 103, 108, 111, 98, 97, 108, 46, 98, 51, 50, 32, 9, 91, 37, 114, 100, 50, 57, 93, 44, 32, 37, 114, 49, 48, 59, 10, 9, 108, 100, 46, 103, 108, 111, 98, 97, 108, 46, 98, 51, 50, 32, 9, 37, 114, 49, 49, 44, 32, 91, 37, 114, 100, 50, 56, 93, 59, 10, 9, 109, 117, 108, 46, 114, 110, 46, 102, 51, 50, 32, 9, 37, 114, 49, 50, 44, 32, 37, 114, 49, 48, 44, 32, 37, 114, 49, 49, 59, 10, 9, 97, 100, 100, 46, 115, 54, 52, 32, 9, 37, 114, 100, 51, 48, 44, 32, 37, 114, 100, 51, 49, 44, 32, 37, 114, 100, 51, 56, 59, 10, 9, 115, 116, 46, 103, 108, 111, 98, 97, 108, 46, 98, 51, 50, 32, 9, 91, 37, 114, 100, 51, 48, 93, 44, 32, 37, 114, 49, 50, 59, 10, 9, 97, 100, 100, 46, 115, 54, 52, 32, 9, 37, 114, 100, 51, 56, 44, 32, 37, 114, 100, 51, 56, 44, 32, 52, 59, 10, 9, 115, 101, 116, 112, 46, 110, 101, 46, 98, 54, 52, 32, 9, 37, 112, 51, 44, 32, 37, 114, 100, 51, 56, 44, 32, 54, 52, 59, 10, 9, 64, 37, 112, 51, 32, 98, 114, 97, 32, 9, 36, 76, 95, 95, 66, 66, 48, 95, 52, 59, 10, 9, 98, 114, 97, 46, 117, 110, 105, 32, 9, 36, 76, 95, 95, 66, 66, 48, 95, 53, 59, 10, 36, 76, 95, 95, 66, 66, 48, 95, 54, 58, 10, 9, 114, 101, 116, 59, 10, 10, 125, 10};
+.global .align 4 .u32 linda_program_kernel_module;
+.global .align 1 .b8 linda_program_kernel_linda_program_kernel_name[21] = {108, 105, 110, 100, 97, 95, 112, 114, 111, 103, 114, 97, 109, 95, 107, 101, 114, 110, 101, 108};
+.visible .const .align 4 .u32 __init_array_object_linda_program_kernel_load_ba3ee25e5e63fea2_123 = linda_program_kernel_load;
+.weak .global .align 4 .u32 __init_array_start;
+.weak .global .align 4 .u32 __init_array_end;
+.visible .const .align 4 .u32 __fini_array_object_linda_program_kernel_unload_ba3ee25e5e63fea2_123 = linda_program_kernel_unload;
+.weak .global .align 4 .u32 __fini_array_start;
+.weak .global .align 4 .u32 __fini_array_end;
+
+.visible .func linda_program(
+	.param .b32 linda_program_param_0,
+	.param .b32 linda_program_param_1,
+	.param .b64 linda_program_param_2,
+	.param .b64 linda_program_param_3,
+	.param .b64 linda_program_param_4,
+	.param .b64 linda_program_param_5,
+	.param .b64 linda_program_param_6,
+	.param .b32 linda_program_param_7,
+	.param .b32 linda_program_param_8,
+	.param .b64 linda_program_param_9,
+	.param .b64 linda_program_param_10,
+	.param .b64 linda_program_param_11,
+	.param .b64 linda_program_param_12,
+	.param .b64 linda_program_param_13
+)
+{
+	.local .align 8 .b8 	__local_depot0[504];
+	.reg .b32 	%SP;
+	.reg .b32 	%SPL;
+	.reg .b32 	%r<108>;
+	.reg .b64 	%rd<11>;
+
+	mov.b32 	%SPL, __local_depot0;
+	cvta.local.u32 	%SP, %SPL;
+	ld.param.b32 	%r1, [linda_program_param_0];
+	{ // callseq 0, 0
+	.param .b64 	param0;
+	.param .b32 	retval0;
+	st.param.b64 	[param0], 8192;
+	call.uni (retval0), malloc, (param0);
+	ld.param.b32 	%r2, [retval0];
+	} // callseq 0
+	ld.param.b32 	%r3, [linda_program_param_1];
+	{ // callseq 1, 0
+	.param .b64 	param0;
+	.param .b32 	retval0;
+	st.param.b64 	[param0], 8192;
+	call.uni (retval0), malloc, (param0);
+	ld.param.b32 	%r4, [retval0];
+	} // callseq 1
+	ld.param.b64 	%rd1, [linda_program_param_2];
+	{ // callseq 2, 0
+	.param .b64 	param0;
+	.param .b32 	retval0;
+	st.param.b64 	[param0], 8192;
+	call.uni (retval0), malloc, (param0);
+	ld.param.b32 	%r5, [retval0];
+	} // callseq 2
+	ld.param.b64 	%rd2, [linda_program_param_3];
+	{ // callseq 3, 0
+	.param .b64 	param0;
+	.param .b32 	retval0;
+	st.param.b64 	[param0], 8192;
+	call.uni (retval0), malloc, (param0);
+	ld.param.b32 	%r6, [retval0];
+	} // callseq 3
+	ld.param.b64 	%rd3, [linda_program_param_4];
+	ld.param.b64 	%rd4, [linda_program_param_5];
+	add.u32 	%r7, %SP, 0;
+	add.u32 	%r8, %SPL, 0;
+	ld.param.b64 	%rd5, [linda_program_param_6];
+	ld.param.b32 	%r9, [linda_program_param_7];
+	add.u32 	%r10, %SP, 320;
+	add.u32 	%r11, %SPL, 320;
+	ld.param.b32 	%r12, [linda_program_param_8];
+	st.local.b64 	[%r8], 8;
+	ld.param.b64 	%rd6, [linda_program_param_9];
+	add.s32 	%r13, %r8, 8;
+	ld.param.b64 	%rd7, [linda_program_param_10];
+	cvta.local.u32 	%r14, %r13;
+	ld.param.b64 	%rd8, [linda_program_param_11];
+	st.local.b64 	[%r8+8], 0;
+	ld.param.b64 	%rd9, [linda_program_param_12];
+	ld.param.b64 	%rd10, [linda_program_param_13];
+	st.local.v2.b32 	[%r11], {%r7, %r14};
+	add.s32 	%r15, %r8, 16;
+	cvta.local.u32 	%r16, %r15;
+	st.local.b64 	[%r8+16], 16;
+	add.s32 	%r17, %r8, 24;
+	cvta.local.u32 	%r18, %r17;
+	st.local.b64 	[%r8+24], 0;
+	st.local.v2.b32 	[%r11+8], {%r16, %r18};
+	add.s32 	%r19, %r8, 32;
+	cvta.local.u32 	%r20, %r19;
+	add.s32 	%r21, %r8, 36;
+	cvta.local.u32 	%r22, %r21;
+	st.local.v2.b32 	[%r8+32], {%r1, %r3};
+	st.local.v2.b32 	[%r11+16], {%r20, %r22};
+	add.s32 	%r23, %r8, 40;
+	cvta.local.u32 	%r24, %r23;
+	st.local.b64 	[%r8+40], %rd1;
+	add.s32 	%r25, %r8, 48;
+	cvta.local.u32 	%r26, %r25;
+	st.local.b64 	[%r8+48], %rd2;
+	st.local.v2.b32 	[%r11+24], {%r24, %r26};
+	add.s32 	%r27, %r8, 56;
+	cvta.local.u32 	%r28, %r27;
+	st.local.b64 	[%r8+56], %rd3;
+	add.s32 	%r29, %r8, 64;
+	cvta.local.u32 	%r30, %r29;
+	st.local.b64 	[%r8+64], %rd4;
+	st.local.v2.b32 	[%r11+32], {%r28, %r30};
+	add.s32 	%r31, %r8, 72;
+	cvta.local.u32 	%r32, %r31;
+	st.local.b64 	[%r8+72], %rd5;
+	add.s32 	%r33, %r8, 80;
+	cvta.local.u32 	%r34, %r33;
+	st.local.v2.b32 	[%r11+40], {%r32, %r34};
+	add.s32 	%r35, %r8, 84;
+	cvta.local.u32 	%r36, %r35;
+	st.local.v2.b32 	[%r8+80], {%r9, %r12};
+	add.s32 	%r37, %r8, 88;
+	cvta.local.u32 	%r38, %r37;
+	st.local.b64 	[%r8+88], %rd6;
+	st.local.v2.b32 	[%r11+48], {%r36, %r38};
+	add.s32 	%r39, %r8, 96;
+	cvta.local.u32 	%r40, %r39;
+	st.local.b64 	[%r8+96], %rd7;
+	add.s32 	%r41, %r8, 104;
+	cvta.local.u32 	%r42, %r41;
+	st.local.b64 	[%r8+104], %rd8;
+	st.local.v2.b32 	[%r11+56], {%r40, %r42};
+	add.s32 	%r43, %r8, 112;
+	cvta.local.u32 	%r44, %r43;
+	st.local.b64 	[%r8+112], %rd9;
+	add.s32 	%r45, %r8, 120;
+	cvta.local.u32 	%r46, %r45;
+	st.local.b64 	[%r8+120], %rd10;
+	st.local.v2.b32 	[%r11+64], {%r44, %r46};
+	add.s32 	%r47, %r8, 128;
+	cvta.local.u32 	%r48, %r47;
+	add.s32 	%r49, %r8, 132;
+	cvta.local.u32 	%r50, %r49;
+	st.local.v2.b32 	[%r8+128], {%r6, %r6};
+	st.local.v2.b32 	[%r11+72], {%r48, %r50};
+	add.s32 	%r51, %r8, 136;
+	cvta.local.u32 	%r52, %r51;
+	st.local.b64 	[%r8+136], 0;
+	add.s32 	%r53, %r8, 144;
+	cvta.local.u32 	%r54, %r53;
+	st.local.b64 	[%r8+144], 32;
+	st.local.v2.b32 	[%r11+80], {%r52, %r54};
+	add.s32 	%r55, %r8, 152;
+	cvta.local.u32 	%r56, %r55;
+	st.local.b64 	[%r8+152], 64;
+	add.s32 	%r57, %r8, 160;
+	cvta.local.u32 	%r58, %r57;
+	st.local.b64 	[%r8+160], 64;
+	st.local.v2.b32 	[%r11+88], {%r56, %r58};
+	add.s32 	%r59, %r8, 168;
+	cvta.local.u32 	%r60, %r59;
+	st.local.b64 	[%r8+168], 1;
+	add.s32 	%r61, %r8, 176;
+	cvta.local.u32 	%r62, %r61;
+	st.local.v2.b32 	[%r11+96], {%r60, %r62};
+	add.s32 	%r63, %r8, 180;
+	cvta.local.u32 	%r64, %r63;
+	st.local.v2.b32 	[%r8+176], {%r5, %r5};
+	add.s32 	%r65, %r8, 184;
+	cvta.local.u32 	%r66, %r65;
+	st.local.b64 	[%r8+184], 0;
+	st.local.v2.b32 	[%r11+104], {%r64, %r66};
+	add.s32 	%r67, %r8, 192;
+	cvta.local.u32 	%r68, %r67;
+	st.local.b64 	[%r8+192], 32;
+	add.s32 	%r69, %r8, 200;
+	cvta.local.u32 	%r70, %r69;
+	st.local.b64 	[%r8+200], 64;
+	st.local.v2.b32 	[%r11+112], {%r68, %r70};
+	add.s32 	%r71, %r8, 208;
+	cvta.local.u32 	%r72, %r71;
+	st.local.b64 	[%r8+208], 64;
+	add.s32 	%r73, %r8, 216;
+	cvta.local.u32 	%r74, %r73;
+	st.local.b64 	[%r8+216], 1;
+	st.local.v2.b32 	[%r11+120], {%r72, %r74};
+	add.s32 	%r75, %r8, 224;
+	cvta.local.u32 	%r76, %r75;
+	add.s32 	%r77, %r8, 228;
+	cvta.local.u32 	%r78, %r77;
+	st.local.v2.b32 	[%r8+224], {%r4, %r4};
+	st.local.v2.b32 	[%r11+128], {%r76, %r78};
+	add.s32 	%r79, %r8, 232;
+	cvta.local.u32 	%r80, %r79;
+	st.local.b64 	[%r8+232], 0;
+	add.s32 	%r81, %r8, 240;
+	cvta.local.u32 	%r82, %r81;
+	st.local.b64 	[%r8+240], 32;
+	st.local.v2.b32 	[%r11+136], {%r80, %r82};
+	add.s32 	%r83, %r8, 248;
+	cvta.local.u32 	%r84, %r83;
+	st.local.b64 	[%r8+248], 64;
+	add.s32 	%r85, %r8, 256;
+	cvta.local.u32 	%r86, %r85;
+	st.local.b64 	[%r8+256], 64;
+	st.local.v2.b32 	[%r11+144], {%r84, %r86};
+	add.s32 	%r87, %r8, 264;
+	cvta.local.u32 	%r88, %r87;
+	st.local.b64 	[%r8+264], 1;
+	add.s32 	%r89, %r8, 272;
+	cvta.local.u32 	%r90, %r89;
+	st.local.v2.b32 	[%r11+152], {%r88, %r90};
+	add.s32 	%r91, %r8, 276;
+	cvta.local.u32 	%r92, %r91;
+	st.local.v2.b32 	[%r8+272], {%r2, %r2};
+	add.s32 	%r93, %r8, 280;
+	cvta.local.u32 	%r94, %r93;
+	st.local.b64 	[%r8+280], 0;
+	st.local.v2.b32 	[%r11+160], {%r92, %r94};
+	add.s32 	%r95, %r8, 288;
+	cvta.local.u32 	%r96, %r95;
+	st.local.b64 	[%r8+288], 32;
+	add.s32 	%r97, %r8, 296;
+	cvta.local.u32 	%r98, %r97;
+	st.local.b64 	[%r8+296], 64;
+	st.local.v2.b32 	[%r11+168], {%r96, %r98};
+	add.s32 	%r99, %r8, 304;
+	cvta.local.u32 	%r100, %r99;
+	st.local.b64 	[%r8+304], 64;
+	add.s32 	%r101, %r8, 312;
+	cvta.local.u32 	%r102, %r101;
+	st.local.b64 	[%r8+312], 1;
+	st.local.v2.b32 	[%r11+176], {%r100, %r102};
+	ld.global.b32 	%r103, [linda_program_kernel_module];
+	{ // callseq 4, 0
+	.param .b32 	param0;
+	.param .b32 	param1;
+	.param .b32 	retval0;
+	mov.b32 	%r104, linda_program_kernel_linda_program_kernel_name;
+	cvta.global.u32 	%r105, %r104;
+	st.param.b32 	[param1], %r105;
+	st.param.b32 	[param0], %r103;
+	call.uni (retval0), mgpuModuleGetFunction, (param0, param1);
+	ld.param.b32 	%r106, [retval0];
+	} // callseq 4
+	{ // callseq 5, 0
+	.param .b32 	retval0;
+	call.uni (retval0), mgpuStreamCreate, ();
+	ld.param.b32 	%r107, [retval0];
+	} // callseq 5
+	{ // callseq 6, 0
+	.param .b32 	param0;
+	.param .b64 	param1;
+	.param .b64 	param2;
+	.param .b64 	param3;
+	.param .b64 	param4;
+	.param .b64 	param5;
+	.param .b64 	param6;
+	.param .b32 	param7;
+	.param .b32 	param8;
+	.param .b32 	param9;
+	.param .b32 	param10;
+	.param .b64 	param11;
+	st.param.b32 	[param9], %r10;
+	st.param.b32 	[param8], %r107;
+	st.param.b32 	[param0], %r106;
+	st.param.b64 	[param11], 46;
+	st.param.b32 	[param10], 0;
+	st.param.b32 	[param7], 0;
+	st.param.b64 	[param6], 1;
+	st.param.b64 	[param5], 1;
+	st.param.b64 	[param4], 4;
+	st.param.b64 	[param3], 1;
+	st.param.b64 	[param2], 1;
+	st.param.b64 	[param1], 4;
+	call.uni mgpuLaunchKernel, (param0, param1, param2, param3, param4, param5, param6, param7, param8, param9, param10, param11);
+	} // callseq 6
+	{ // callseq 7, 0
+	.param .b32 	param0;
+	st.param.b32 	[param0], %r107;
+	call.uni mgpuStreamSynchronize, (param0);
+	} // callseq 7
+	{ // callseq 8, 0
+	.param .b32 	param0;
+	st.param.b32 	[param0], %r107;
+	call.uni mgpuStreamDestroy, (param0);
+	} // callseq 8
+	{ // callseq 9, 0
+	.param .b32 	param0;
+	st.param.b32 	[param0], %r6;
+	call.uni free, (param0);
+	} // callseq 9
+	{ // callseq 10, 0
+	.param .b32 	param0;
+	st.param.b32 	[param0], %r5;
+	call.uni free, (param0);
+	} // callseq 10
+	{ // callseq 11, 0
+	.param .b32 	param0;
+	st.param.b32 	[param0], %r4;
+	call.uni free, (param0);
+	} // callseq 11
+	{ // callseq 12, 0
+	.param .b32 	param0;
+	st.param.b32 	[param0], %r2;
+	call.uni free, (param0);
+	} // callseq 12
+	ret;
+
+}
+.func linda_program_kernel_load()
+{
+	.reg .b32 	%r<4>;
+
+	{ // callseq 13, 0
+	.param .b32 	param0;
+	.param .b32 	param1;
+	.param .b32 	retval0;
+	mov.b32 	%r1, linda_program_kernel_binary;
+	cvta.global.u32 	%r2, %r1;
+	st.param.b32 	[param0], %r2;
+	st.param.b32 	[param1], 2;
+	call.uni (retval0), mgpuModuleLoadJIT, (param0, param1);
+	ld.param.b32 	%r3, [retval0];
+	} // callseq 13
+	st.global.b32 	[linda_program_kernel_module], %r3;
+	ret;
+
+}
+.func linda_program_kernel_unload()
+{
+	.reg .b32 	%r<2>;
+
+	ld.global.b32 	%r1, [linda_program_kernel_module];
+	{ // callseq 14, 0
+	.param .b32 	param0;
+	st.param.b32 	[param0], %r1;
+	call.uni mgpuModuleUnload, (param0);
+	} // callseq 14
+	ret;
+
+}
+	// .weak	nvptx$device$init
+.weak .entry nvptx$device$init()
+.maxntid 1
+.maxclusterrank 1
+{
+	.reg .pred 	%p<3>;
+	.reg .b32 	%r<4>;
+
+	ld.global.b32 	%r3, [__init_array_start];
+	ld.global.b32 	%r1, [__init_array_end];
+	setp.eq.b32 	%p1, %r3, %r1;
+	@%p1 bra 	$L__BB3_2;
+$L__BB3_1:
+	ld.global.b32 	%r2, [%r3];
+	{ // callseq 15, 0
+	prototype_15 : .callprototype ()_ ();
+	call %r2, (), prototype_15;
+	} // callseq 15
+	add.s32 	%r3, %r3, 4;
+	setp.ne.b32 	%p2, %r3, %r1;
+	@%p2 bra 	$L__BB3_1;
+$L__BB3_2:
+	ret;
+
+}
+	// .weak	nvptx$device$fini
+.weak .entry nvptx$device$fini()
+.maxntid 1
+.maxclusterrank 1
+{
+	.reg .pred 	%p<3>;
+	.reg .b32 	%r<7>;
+	.reg .b64 	%rd<5>;
+
+	ld.global.b32 	%r1, [__fini_array_start];
+	ld.global.b32 	%rd1, [__fini_array_end];
+	cvt.u64.u32 	%rd2, %r1;
+	sub.s64 	%rd3, %rd1, %rd2;
+	shr.u64 	%rd4, %rd3, 3;
+	cvt.u32.u64 	%r2, %rd4;
+	shl.b32 	%r3, %r2, 2;
+	add.s32 	%r4, %r1, %r3;
+	add.s32 	%r6, %r4, -4;
+	setp.lt.u32 	%p1, %r6, %r1;
+	@%p1 bra 	$L__BB4_2;
+$L__BB4_1:
+	ld.global.b32 	%r5, [%r6];
+	{ // callseq 16, 0
+	prototype_16 : .callprototype ()_ ();
+	call %r5, (), prototype_16;
+	} // callseq 16
+	add.s32 	%r6, %r6, -4;
+	setp.ge.u32 	%p2, %r6, %r1;
+	@%p2 bra 	$L__BB4_1;
+$L__BB4_2:
+	ret;
+
+}

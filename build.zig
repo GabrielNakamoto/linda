@@ -28,6 +28,10 @@ pub fn build(b: *std.Build) void {
       "Transforms",
       "Bufferization",
       "Func",
+      "GPU",
+      "NVVM",
+      "ROCDL",
+      "Conversion",
       "RegisterEverything",
       "Target"
     };

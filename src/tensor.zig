@@ -140,7 +140,7 @@ pub fn Tensor(comptime T: type) type {
       defer mlir_gen.deinit();
 
       const mlirModule = try mlir_gen.compileTensorSchedule(tensor_schedule);
-      const bin = try backend.compileKernelModule(mlirModule, self.ctx.targetArch, self.ctx.debug);
+      const bin = try backend.compileKernelModule(mlir_gen.ctx, mlirModule, self.ctx.targetArch, self.ctx.debug);
       _ = bin;
     }
   };

@@ -16,6 +16,9 @@ pub const imports = @cImport({
   @cInclude("mlir-c/BuiltinAttributes.h");
   @cInclude("mlir-c/Dialect/Bufferization.h");
   @cInclude("mlir-c/Dialect/Affine.h");
+  @cInclude("mlir-c/Dialect/GPU.h");
+  @cInclude("mlir-c/Dialect/NVVM.h");
+  @cInclude("mlir-c/Conversion.h");
   @cInclude("mlir-c/Dialect/Func.h");
 
 	// custom mlir CAPI
