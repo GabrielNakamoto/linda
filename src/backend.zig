@@ -13,7 +13,21 @@ pub const Accelerator = struct {
 pub const RDNA3: Accelerator = .{ .arch = .AMD, .triple = "amdgcn-amd-amdhsa", .cpu = "gfx1100" };
 pub const NVPTX: Accelerator = .{ .arch = .NV, .triple = "nvptx-nvidia-cuda", .cpu = "sm_120" };
 
-pub fn compileKernelModule(mlirCtx: c.MlirContext, mlirModule: c.MlirModule, arch: Accelerator, debug: bool) !c.LLVMMemoryBufferRef {
+fn extractGpuBinary(module: c.MlirModule) !c.MlirStringRef {
+  const moduleOp = c.mlirModuleGetOperation(module);
+  const symbols = c.mlirSymbolTableCreate(moduleOp);
+  defer c.mlirSymbolTableDestroy(symbols);
+
+  const binary = c.mlirSymbolTableLookup(symbols, helpers.stringRef("linda_program_kernel"));
+  if (c.mlirOperationIsNull(binary)) return error.GpuBinNotFound;
+
+  const objects = c.mlirOperationGetInherentAttributeByName(binary, helpers.stringRef("objects"));
+  const object = c.mlirArrayAttrGetElement(objects, 0);
+  return c.mlirGPUObjectAttrGetObject(object);
+}
+
+pub fn compileKernelModule(mlirCtx: c.MlirContext, mlirModule: c.MlirModule, arch: Accelerator, debug: bool) !void {
+  _ = arch;
   // (1) finish converting gpu mlir diaslect to target specific host/device binaries
   // and kernel launches; NVVM for ptx, ROCDL for AMD
   const pm = c.mlirPassManagerCreate(mlirCtx);
@@ -21,6 +35,11 @@ pub fn compileKernelModule(mlirCtx: c.MlirContext, mlirModule: c.MlirModule, arc
     //.NV => c.mlirCreateConversionConvertGpuOpsToNVVMOps(),
     //.AMD => c.mlirCreateConversionConvertGpuOpsToROCDLOps()
   //};
+  if (debug) {
+    c.mlirPassManagerEnableIRPrinting(
+      pm, true, true, true, false, false, c.mlirOpPrintingFlagsCreate(), helpers.stringRef("dump/")
+    );
+  }
 
   const rootPm = c.mlirPassManagerGetAsOpPassManager(pm);
   // https://mlir.llvm.org/docs/Dialects/GPU/#compilation-overview
@@ -34,42 +53,9 @@ pub fn compileKernelModule(mlirCtx: c.MlirContext, mlirModule: c.MlirModule, arc
 
   helpers.mlirAssertGood(c.mlirPassManagerRunOnOp(pm, c.mlirModuleGetOperation(mlirModule)));
 
-  c.mlirOperationDump(c.mlirModuleGetOperation(mlirModule));
+  // c.mlirOperationDump(c.mlirModuleGetOperation(mlirModule));
 
-  const ctx = c.LLVMContextCreate();
-  defer c.LLVMContextDispose(ctx);
-  const module = c.mlirTranslateModuleToLLVMIR(c.mlirModuleGetOperation(mlirModule), ctx);
-
-	c.LLVMInitializeAllTargets();
-	c.LLVMInitializeAllTargetMCs();
-	c.LLVMInitializeAllTargetInfos();
-	c.LLVMInitializeAllAsmPrinters();
-	c.LLVMInitializeAllAsmParsers();
-
-  var target: c.LLVMTargetRef = null;
-  var msg = "";
-  _ = c.LLVMGetTargetFromTriple(@ptrCast(arch.triple), &target, @ptrCast(&msg));
-  const machine = c.LLVMCreateTargetMachine(target, @ptrCast(arch.triple), @ptrCast(arch.cpu), "",
-    c.LLVMCodeGenLevelDefault, c.LLVMRelocDefault, c.LLVMCodeModelDefault);
-  const layout = c.LLVMCreateTargetDataLayout(machine);
-
-  // configure module
-  c.LLVMSetTarget(module, @ptrCast(arch.triple));
-  c.LLVMSetModuleDataLayout(module, layout);
-
-  if (debug) _ = c.LLVMPrintModuleToFile(module, "dump/kernel.ll", @ptrCast(&msg));
-
-  // (2) run final llvmir optimization passes
-  const options = c.LLVMCreatePassBuilderOptions();
-  c.LLVMPassBuilderOptionsSetVerifyEach(options, 1);
-  _ = c.LLVMRunPasses(module, "default<O2>", machine, options);
-
-  if (debug) {
-    _ = c.LLVMPrintModuleToFile(module, "dump/kernel-opt.ll", @ptrCast(&msg));
-    _ = c.LLVMTargetMachineEmitToFile(machine, module, "dump/kernel.s", c.LLVMAssemblyFile, @ptrCast(&msg));
-  }
-
-  var buffer: c.LLVMMemoryBufferRef = null;
-  _ = c.LLVMTargetMachineEmitToMemoryBuffer(machine, module, c.LLVMAssemblyFile, @ptrCast(&msg), &buffer);
-  return buffer;
+  const ptx = try extractGpuBinary(mlirModule);
+  const slice = ptx.data[0..ptx.length];
+  std.debug.print("{s}\n", .{slice});
 }
