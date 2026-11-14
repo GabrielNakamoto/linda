@@ -1,6 +1,7 @@
 const std = @import("std");
 const mlir = @import("mlir.zig");
 const backend = @import("backend.zig");
+const cuda = @import("cudaz");
 
 pub const IROp = enum {
   Buffer,
@@ -140,7 +141,17 @@ pub fn Tensor(comptime T: type) type {
       defer mlir_gen.deinit();
 
       const mlirModule = try mlir_gen.compileTensorSchedule(tensor_schedule);
-      _ = try backend.compileKernelModule(mlir_gen.ctx, mlirModule, self.ctx.targetArch, self.ctx.debug);
+      const bin = try backend.compileKernelModule(mlir_gen.ctx, mlirModule, self.ctx.targetArch, self.ctx.debug);
+
+      // cuda runtime experiment
+      const device = try cuda.Device.default();
+      defer device.deinit();
+
+      const module = try cuda.Device.loadPtxText(bin);
+      const func = try module.getFunc("linda_program_kernel");
+      _ = func;
+
+      // try func.run(.{}, .{ .block_dim = .{ 8, 1, 1 }, .grid_dim = { 1, 1, 1 }, .shared_mem_bytes = 0 });
     }
   };
 }

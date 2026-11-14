@@ -11,7 +11,7 @@ pub const Accelerator = struct {
 };
 
 pub const RDNA3: Accelerator = .{ .arch = .AMD, .triple = "amdgcn-amd-amdhsa", .cpu = "gfx1100" };
-pub const NVPTX: Accelerator = .{ .arch = .NV, .triple = "nvptx-nvidia-cuda", .cpu = "sm_120" };
+pub const NVPTX: Accelerator = .{ .arch = .NV, .triple = "nvptx-nvidia-cuda", .cpu = "sm_86" };
 
 fn extractGpuBinary(module: c.MlirModule) !c.MlirStringRef {
   const moduleOp = c.mlirModuleGetOperation(module);
@@ -26,7 +26,7 @@ fn extractGpuBinary(module: c.MlirModule) !c.MlirStringRef {
   return c.mlirGPUObjectAttrGetObject(object);
 }
 
-pub fn compileKernelModule(mlirCtx: c.MlirContext, mlirModule: c.MlirModule, arch: Accelerator, debug: bool) ![]const u8 {
+pub fn compileKernelModule(mlirCtx: c.MlirContext, mlirModule: c.MlirModule, arch: Accelerator, debug: bool) ![:0]const u8 {
   _ = arch;
   const pm = c.mlirPassManagerCreate(mlirCtx);
   //const gpuToArchPass = switch (arch.arch) {
@@ -43,8 +43,12 @@ pub fn compileKernelModule(mlirCtx: c.MlirContext, mlirModule: c.MlirModule, arc
   // https://mlir.llvm.org/docs/Dialects/GPU/#compilation-overview
   helpers.mlirAssertGood(c.mlirOpPassManagerAddPipeline(rootPm,
     helpers.stringRef(
-    \\nvvm-attach-target{chip=sm_120},
-    \\gpu.module(lower-affine, convert-scf-to-cf, convert-gpu-to-nvvm, reconcile-unrealized-casts),
+    \\nvvm-attach-target{chip=sm_86},
+    \\gpu.module(
+    \\  lower-affine,
+    \\  convert-scf-to-cf,
+    \\  convert-gpu-to-nvvm{use-bare-ptr-memref-call-conv=true},
+    \\  reconcile-unrealized-casts),
     \\gpu-to-llvm,
     \\gpu-module-to-binary{format=assembly}
     ), helpers.pipelineDiagnostic, null));
@@ -52,7 +56,7 @@ pub fn compileKernelModule(mlirCtx: c.MlirContext, mlirModule: c.MlirModule, arc
   helpers.mlirAssertGood(c.mlirPassManagerRunOnOp(pm, c.mlirModuleGetOperation(mlirModule)));
 
   const ptx = try extractGpuBinary(mlirModule);
-  const slice = ptx.data[0..ptx.length];
+  const slice = ptx.data[0..ptx.length:0];
 
   if (debug) {
     c.mlirOperationDump(c.mlirModuleGetOperation(mlirModule));

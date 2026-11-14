@@ -20,7 +20,4 @@ pub fn main() !void {
   const z = try a.add(c);
   const y = try z.mul(d);
   try y.compile();
-
-  // const x = try y.reshape(&.{128, 16});
-  // try x.compile();
 }

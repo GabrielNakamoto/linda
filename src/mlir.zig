@@ -60,7 +60,10 @@ pub const MLIRGenerator = struct {
       optPm, helpers.stringRef(
         \\affine-loop-fusion,
         \\affine-loop-tile{tile-sizes=8,16},
-        \\convert-affine-for-to-gpu{gpu-block-dims=1 gpu-thread-dims=1}
+        \\convert-affine-for-to-gpu{gpu-block-dims=1 gpu-thread-dims=1},
+        \\canonicalize,
+        \\cse,
+        \\gpu-launch-sink-index-computations
         ), helpers.pipelineDiagnostic, null));
 
     c.mlirPassManagerAddOwnedPass(passManager, c.mlirCreateGPUGpuKernelOutliningPass());
