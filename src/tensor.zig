@@ -2,6 +2,8 @@ const std = @import("std");
 const mlir = @import("mlir.zig");
 const backend = @import("backend.zig");
 const cuda = @import("cudaz");
+const runtime = @import("runtime.zig");
+const helpers = @import("helpers.zig");
 
 pub const IROp = enum {
   Buffer,
@@ -55,6 +57,8 @@ pub const Node = struct {
       .{@tagName(self.op), self.dtype, self.shape, head, self.inputs.len});
   }
 
+  pub fn numel(self: Node) u64 { return helpers.numel(self.shape); }
+
   fn topovisit(self: *const Node, gpa: std.mem.Allocator,
     visited: *std.AutoHashMap(*const Node, void), schedule: *std.ArrayList(*const Node)) !void {
     if (visited.contains(self)) return;
@@ -73,12 +77,6 @@ pub const Node = struct {
   }
 };
 
-fn numel(shape: []const u64) u64 {
-  var n: u64 = 1;
-  for (shape) |dim| n *= dim;
-  return n;
-}
-
 pub fn Tensor(comptime T: type) type {
   _ = dtypeOf(T);
 
@@ -90,7 +88,7 @@ pub fn Tensor(comptime T: type) type {
     fn shape(self: Self) []const u64 { return self.node.shape; }
 
     pub fn ones(ctx: *TensorCtx, comptime new_shape: []const u64) !Self {
-      const data = try ctx.arena.allocator().alloc(T, numel(new_shape));
+      const data = try ctx.arena.allocator().alloc(T, helpers.numel(new_shape));
       @memset(data, 1.0);
 
       const node = try ctx.arena.allocator().create(Node);
@@ -141,17 +139,9 @@ pub fn Tensor(comptime T: type) type {
       defer mlir_gen.deinit();
 
       const mlirModule = try mlir_gen.compileTensorSchedule(tensor_schedule);
-      const bin = try backend.compileKernelModule(mlir_gen.ctx, mlirModule, self.ctx.targetArch, self.ctx.debug);
+      const ptx = try backend.compileKernelModule(mlir_gen.ctx, mlirModule, self.ctx.targetArch, self.ctx.debug);
 
-      // cuda runtime experiment
-      const device = try cuda.Device.default();
-      defer device.deinit();
-
-      const module = try cuda.Device.loadPtxText(bin);
-      const func = try module.getFunc("linda_program_kernel");
-      _ = func;
-
-      // try func.run(.{}, .{ .block_dim = .{ 8, 1, 1 }, .grid_dim = { 1, 1, 1 }, .shared_mem_bytes = 0 });
+      try runtime.launchCUDAKernel(T, self.ctx.compile_arena.allocator(), ptx, tensor_schedule);
     }
   };
 }

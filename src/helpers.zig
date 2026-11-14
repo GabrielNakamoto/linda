@@ -2,6 +2,13 @@ const std = @import("std");
 const tensor = @import("tensor.zig");
 const c = @import("capi.zig").imports;
 
+// Generic
+pub fn numel(shape: []const u64) u64 {
+  var n: u64 = 1;
+  for (shape) |dim| n *= dim;
+  return n;
+}
+
 // ****** MLIR Wrappers and Conversion *******
 pub fn mlirAssertGood(result: c.MlirLogicalResult) void {
   std.debug.assert(result.value != 0);
