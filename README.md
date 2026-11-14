@@ -26,7 +26,8 @@ const c = try a.add(b);
 const d = try c.mul(a);
 const z = try a.add(c);
 const y = try z.mul(d);
-try y.compile();
+const res = try y.exec();
+res.print();
 ```
 
 **Here is the equivalant DAG:**
