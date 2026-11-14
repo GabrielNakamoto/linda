@@ -145,29 +145,21 @@ module {
 
 4. **GPU Graph**
 
-****
 ```mlir
-#map = affine_map<(d0) -> (d0)>
-#map1 = affine_map<(d0) -> (d0 + 8)>
-#map2 = affine_map<(d0) -> (d0 + 16)>
+// -----// IR Dump After GpuKernelOutliningPass (gpu-kernel-outlining) ('builtin.module' operation) //----- //
+#map = affine_map<()[s0] -> (s0 + 8)>
+#map1 = affine_map<()[s0] -> (s0 + 16)>
 module attributes {gpu.container_module} {
   func.func @linda_program(%arg0: memref<32x64xf32>, %arg1: memref<32x64xf32>) {
+    %c4 = arith.constant 4 : index
+    %c1 = arith.constant 1 : index
+    %c16 = arith.constant 16 : index
+    %c8 = arith.constant 8 : index
     %alloc = memref.alloc() : memref<32x64xf32>
     %alloc_0 = memref.alloc() : memref<32x64xf32>
     %alloc_1 = memref.alloc() : memref<32x64xf32>
     %alloc_2 = memref.alloc() : memref<32x64xf32>
-    %c0 = arith.constant 0 : index
-    %c32 = arith.constant 32 : index
-    %0 = arith.subi %c32, %c0 : index
-    %c8 = arith.constant 8 : index
-    %1 = arith.ceildivsi %0, %c8 : index
-    %c0_3 = arith.constant 0 : index
-    %c64 = arith.constant 64 : index
-    %2 = arith.subi %c64, %c0_3 : index
-    %c16 = arith.constant 16 : index
-    %3 = arith.ceildivsi %2, %c16 : index
-    %c1 = arith.constant 1 : index
-    gpu.launch_func  @linda_program_kernel::@linda_program_kernel blocks in (%1, %c1, %c1) threads in (%3, %c1, %c1)  args(%c8 : index, %c0 : index, %c16 : index, %c0_3 : index, %arg0 : memref<32x64xf32>, %arg1 : memref<32x64xf32>, %alloc_2 : memref<32x64xf32>, %alloc_1 : memref<32x64xf32>, %alloc_0 : memref<32x64xf32>, %alloc : memref<32x64xf32>)
+    gpu.launch_func  @linda_program_kernel::@linda_program_kernel blocks in (%c4, %c1, %c1) threads in (%c4, %c1, %c1)  args(%arg0 : memref<32x64xf32>, %arg1 : memref<32x64xf32>, %alloc_2 : memref<32x64xf32>, %alloc_1 : memref<32x64xf32>, %alloc_0 : memref<32x64xf32>, %alloc : memref<32x64xf32>)
     memref.dealloc %alloc_2 : memref<32x64xf32>
     memref.dealloc %alloc_1 : memref<32x64xf32>
     memref.dealloc %alloc_0 : memref<32x64xf32>
@@ -175,7 +167,7 @@ module attributes {gpu.container_module} {
     return
   }
   gpu.module @linda_program_kernel {
-    gpu.func @linda_program_kernel(%arg0: index, %arg1: index, %arg2: index, %arg3: index, %arg4: memref<32x64xf32>, %arg5: memref<32x64xf32>, %arg6: memref<32x64xf32>, %arg7: memref<32x64xf32>, %arg8: memref<32x64xf32>, %arg9: memref<32x64xf32>) kernel {
+    gpu.func @linda_program_kernel(%arg0: memref<32x64xf32>, %arg1: memref<32x64xf32>, %arg2: memref<32x64xf32>, %arg3: memref<32x64xf32>, %arg4: memref<32x64xf32>, %arg5: memref<32x64xf32>) kernel attributes {known_block_size = array<i32: 4, 1, 1>, known_grid_size = array<i32: 4, 1, 1>} {
       %block_id_x = gpu.block_id  x
       %block_id_y = gpu.block_id  y
       %block_id_z = gpu.block_id  z
@@ -188,28 +180,28 @@ module attributes {gpu.container_module} {
       %block_dim_x = gpu.block_dim  x
       %block_dim_y = gpu.block_dim  y
       %block_dim_z = gpu.block_dim  z
-      %0 = arith.muli %arg0, %block_id_x : index
-      %1 = arith.addi %arg1, %0 : index
-      %2 = arith.muli %arg2, %thread_id_x : index
-      %3 = arith.addi %arg3, %2 : index
-      affine.for %arg10 = #map(%1) to #map1(%1) {
-        affine.for %arg11 = #map(%3) to #map2(%3) {
-          %4 = affine.load %arg4[%arg10, %arg11] : memref<32x64xf32>
-          %5 = affine.load %arg5[%arg10, %arg11] : memref<32x64xf32>
-          %6 = arith.addf %4, %5 : f32
-          affine.store %6, %arg6[%arg10, %arg11] : memref<32x64xf32>
-          %7 = affine.load %arg4[%arg10, %arg11] : memref<32x64xf32>
-          %8 = affine.load %arg6[%arg10, %arg11] : memref<32x64xf32>
-          %9 = arith.addf %7, %8 : f32
-          affine.store %9, %arg7[%arg10, %arg11] : memref<32x64xf32>
-          %10 = affine.load %arg6[%arg10, %arg11] : memref<32x64xf32>
-          %11 = affine.load %arg4[%arg10, %arg11] : memref<32x64xf32>
-          %12 = arith.mulf %10, %11 : f32
-          affine.store %12, %arg8[%arg10, %arg11] : memref<32x64xf32>
-          %13 = affine.load %arg7[%arg10, %arg11] : memref<32x64xf32>
-          %14 = affine.load %arg8[%arg10, %arg11] : memref<32x64xf32>
-          %15 = arith.mulf %13, %14 : f32
-          affine.store %15, %arg9[%arg10, %arg11] : memref<32x64xf32>
+      %c8 = arith.constant 8 : index
+      %c16 = arith.constant 16 : index
+      %0 = arith.muli %block_id_x, %c8 : index
+      %1 = arith.muli %thread_id_x, %c16 : index
+      affine.for %arg6 = %0 to #map()[%0] {
+        affine.for %arg7 = %1 to #map1()[%1] {
+          %2 = affine.load %arg0[%arg6, %arg7] : memref<32x64xf32>
+          %3 = affine.load %arg1[%arg6, %arg7] : memref<32x64xf32>
+          %4 = arith.addf %2, %3 : f32
+          affine.store %4, %arg2[%arg6, %arg7] : memref<32x64xf32>
+          %5 = affine.load %arg0[%arg6, %arg7] : memref<32x64xf32>
+          %6 = affine.load %arg2[%arg6, %arg7] : memref<32x64xf32>
+          %7 = arith.addf %5, %6 : f32
+          affine.store %7, %arg3[%arg6, %arg7] : memref<32x64xf32>
+          %8 = affine.load %arg2[%arg6, %arg7] : memref<32x64xf32>
+          %9 = affine.load %arg0[%arg6, %arg7] : memref<32x64xf32>
+          %10 = arith.mulf %8, %9 : f32
+          affine.store %10, %arg4[%arg6, %arg7] : memref<32x64xf32>
+          %11 = affine.load %arg3[%arg6, %arg7] : memref<32x64xf32>
+          %12 = affine.load %arg4[%arg6, %arg7] : memref<32x64xf32>
+          %13 = arith.mulf %11, %12 : f32
+          affine.store %13, %arg5[%arg6, %arg7] : memref<32x64xf32>
         }
       }
       gpu.return
@@ -227,145 +219,110 @@ ex. output when targeting sm_120 nvvm MLIR dialect with final `gpu-module-to-bin
 // Generated by LLVM NVPTX Back-End
 //
 
-.version 8.7
-.target sm_120
+.version 7.1
+.target sm_86
 .address_size 64
 
 	// .globl	linda_program_kernel
 
 .visible .entry linda_program_kernel(
-	.param .u64 linda_program_kernel_param_0,
-	.param .u64 linda_program_kernel_param_1,
-	.param .u64 linda_program_kernel_param_2,
-	.param .u64 linda_program_kernel_param_3,
+	.param .u64 .ptr .align 1 linda_program_kernel_param_0,
+	.param .u64 .ptr .align 1 linda_program_kernel_param_1,
+	.param .u64 .ptr .align 1 linda_program_kernel_param_2,
+	.param .u64 .ptr .align 1 linda_program_kernel_param_3,
 	.param .u64 .ptr .align 1 linda_program_kernel_param_4,
-	.param .u64 .ptr .align 1 linda_program_kernel_param_5,
-	.param .u64 linda_program_kernel_param_6,
-	.param .u64 linda_program_kernel_param_7,
-	.param .u64 linda_program_kernel_param_8,
-	.param .u64 linda_program_kernel_param_9,
-	.param .u64 linda_program_kernel_param_10,
-	.param .u64 .ptr .align 1 linda_program_kernel_param_11,
-	.param .u64 .ptr .align 1 linda_program_kernel_param_12,
-	.param .u64 linda_program_kernel_param_13,
-	.param .u64 linda_program_kernel_param_14,
-	.param .u64 linda_program_kernel_param_15,
-	.param .u64 linda_program_kernel_param_16,
-	.param .u64 linda_program_kernel_param_17,
-	.param .u64 .ptr .align 1 linda_program_kernel_param_18,
-	.param .u64 .ptr .align 1 linda_program_kernel_param_19,
-	.param .u64 linda_program_kernel_param_20,
-	.param .u64 linda_program_kernel_param_21,
-	.param .u64 linda_program_kernel_param_22,
-	.param .u64 linda_program_kernel_param_23,
-	.param .u64 linda_program_kernel_param_24,
-	.param .u64 .ptr .align 1 linda_program_kernel_param_25,
-	.param .u64 .ptr .align 1 linda_program_kernel_param_26,
-	.param .u64 linda_program_kernel_param_27,
-	.param .u64 linda_program_kernel_param_28,
-	.param .u64 linda_program_kernel_param_29,
-	.param .u64 linda_program_kernel_param_30,
-	.param .u64 linda_program_kernel_param_31,
-	.param .u64 .ptr .align 1 linda_program_kernel_param_32,
-	.param .u64 .ptr .align 1 linda_program_kernel_param_33,
-	.param .u64 linda_program_kernel_param_34,
-	.param .u64 linda_program_kernel_param_35,
-	.param .u64 linda_program_kernel_param_36,
-	.param .u64 linda_program_kernel_param_37,
-	.param .u64 linda_program_kernel_param_38,
-	.param .u64 .ptr .align 1 linda_program_kernel_param_39,
-	.param .u64 .ptr .align 1 linda_program_kernel_param_40,
-	.param .u64 linda_program_kernel_param_41,
-	.param .u64 linda_program_kernel_param_42,
-	.param .u64 linda_program_kernel_param_43,
-	.param .u64 linda_program_kernel_param_44,
-	.param .u64 linda_program_kernel_param_45
+	.param .u64 .ptr .align 1 linda_program_kernel_param_5
 )
+.maxntid 4, 1, 1
 {
-	.reg .pred 	%p<5>;
+	.reg .pred 	%p<3>;
 	.reg .b32 	%r<13>;
-	.reg .b64 	%rd<39>;
+	.reg .b64 	%rd<32>;
 
-	ld.param.b64 	%rd10, [linda_program_kernel_param_0];
-	ld.param.b64 	%rd11, [linda_program_kernel_param_5];
-	cvta.to.global.u64 	%rd1, %rd11;
-	ld.param.b64 	%rd12, [linda_program_kernel_param_1];
-	ld.param.b64 	%rd13, [linda_program_kernel_param_12];
-	cvta.to.global.u64 	%rd2, %rd13;
-	ld.param.b64 	%rd15, [linda_program_kernel_param_19];
-	cvta.to.global.u64 	%rd3, %rd15;
-	ld.param.b64 	%rd17, [linda_program_kernel_param_26];
-	cvta.to.global.u64 	%rd4, %rd17;
-	ld.param.b64 	%rd18, [linda_program_kernel_param_33];
-	cvta.to.global.u64 	%rd5, %rd18;
-	ld.param.b64 	%rd19, [linda_program_kernel_param_40];
-	cvta.to.global.u64 	%rd6, %rd19;
+	ld.param.b64 	%rd3, [linda_program_kernel_param_0];
+	cvta.to.global.u64 	%rd4, %rd3;
+	ld.param.b64 	%rd5, [linda_program_kernel_param_1];
+	cvta.to.global.u64 	%rd6, %rd5;
+	ld.param.b64 	%rd7, [linda_program_kernel_param_2];
+	cvta.to.global.u64 	%rd8, %rd7;
+	ld.param.b64 	%rd9, [linda_program_kernel_param_3];
+	cvta.to.global.u64 	%rd10, %rd9;
+	ld.param.b64 	%rd11, [linda_program_kernel_param_4];
+	cvta.to.global.u64 	%rd12, %rd11;
+	ld.param.b64 	%rd13, [linda_program_kernel_param_5];
+	cvta.to.global.u64 	%rd14, %rd13;
 	mov.u32 	%r1, %ctaid.x;
-	cvt.u64.u32 	%rd20, %r1;
-	mad.lo.s64 	%rd37, %rd10, %rd20, %rd12;
-	setp.gt.s64 	%p1, %rd37, 9223372036854775799;
-	@%p1 bra 	$L__BB0_6;
-	ld.param.b64 	%rd14, [linda_program_kernel_param_2];
-	ld.param.b64 	%rd16, [linda_program_kernel_param_3];
 	mov.u32 	%r2, %tid.x;
-	cvt.u64.u32 	%rd21, %r2;
-	mad.lo.s64 	%rd7, %rd14, %rd21, %rd16;
-	add.s64 	%rd8, %rd37, 7;
-	shl.b64 	%rd22, %rd37, 6;
-	add.s64 	%rd23, %rd7, %rd22;
-	shl.b64 	%rd24, %rd23, 2;
-	add.s64 	%rd36, %rd1, %rd24;
-	add.s64 	%rd35, %rd2, %rd24;
-	add.s64 	%rd34, %rd3, %rd24;
-	add.s64 	%rd33, %rd4, %rd24;
-	add.s64 	%rd32, %rd5, %rd24;
-	add.s64 	%rd31, %rd6, %rd24;
-	setp.gt.s64 	%p2, %rd7, 9223372036854775791;
-	bra.uni 	$L__BB0_2;
-$L__BB0_5:
-	add.s64 	%rd9, %rd37, 1;
-	add.s64 	%rd36, %rd36, 256;
-	add.s64 	%rd35, %rd35, 256;
-	add.s64 	%rd34, %rd34, 256;
-	add.s64 	%rd33, %rd33, 256;
-	add.s64 	%rd32, %rd32, 256;
-	add.s64 	%rd31, %rd31, 256;
-	setp.ne.b64 	%p4, %rd37, %rd8;
-	mov.b64 	%rd37, %rd9;
-	@%p4 bra 	$L__BB0_2;
-	bra.uni 	$L__BB0_6;
+	mul.wide.u32 	%rd30, %r1, 8;
+	or.b64 	%rd1, %rd30, 7;
+	mul.wide.u32 	%rd15, %r1, 2048;
+	mul.wide.u32 	%rd16, %r2, 64;
+	or.b64 	%rd17, %rd15, %rd16;
+	add.s64 	%rd29, %rd4, %rd17;
+	add.s64 	%rd28, %rd6, %rd17;
+	add.s64 	%rd27, %rd8, %rd17;
+	add.s64 	%rd26, %rd10, %rd17;
+	add.s64 	%rd25, %rd12, %rd17;
+	add.s64 	%rd24, %rd14, %rd17;
+$L__BB0_1:
+	mov.b64 	%rd31, 0;
 $L__BB0_2:
-	@%p2 bra 	$L__BB0_5;
-	mov.b64 	%rd38, 0;
-$L__BB0_4:
-	add.s64 	%rd25, %rd36, %rd38;
-	ld.global.b32 	%r3, [%rd25];
-	add.s64 	%rd26, %rd35, %rd38;
-	ld.global.b32 	%r4, [%rd26];
+	add.s64 	%rd18, %rd29, %rd31;
+	ld.global.b32 	%r3, [%rd18];
+	add.s64 	%rd19, %rd28, %rd31;
+	ld.global.b32 	%r4, [%rd19];
 	add.rn.f32 	%r5, %r3, %r4;
-	add.s64 	%rd27, %rd34, %rd38;
-	st.global.b32 	[%rd27], %r5;
-	ld.global.b32 	%r6, [%rd25];
+	add.s64 	%rd20, %rd27, %rd31;
+	st.global.b32 	[%rd20], %r5;
+	ld.global.b32 	%r6, [%rd18];
 	add.rn.f32 	%r7, %r5, %r6;
-	add.s64 	%rd28, %rd33, %rd38;
-	st.global.b32 	[%rd28], %r7;
-	ld.global.b32 	%r8, [%rd27];
-	ld.global.b32 	%r9, [%rd25];
+	add.s64 	%rd21, %rd26, %rd31;
+	st.global.b32 	[%rd21], %r7;
+	ld.global.b32 	%r8, [%rd20];
+	ld.global.b32 	%r9, [%rd18];
 	mul.rn.f32 	%r10, %r8, %r9;
-	add.s64 	%rd29, %rd32, %rd38;
-	st.global.b32 	[%rd29], %r10;
-	ld.global.b32 	%r11, [%rd28];
+	add.s64 	%rd22, %rd25, %rd31;
+	st.global.b32 	[%rd22], %r10;
+	ld.global.b32 	%r11, [%rd21];
 	mul.rn.f32 	%r12, %r10, %r11;
-	add.s64 	%rd30, %rd31, %rd38;
-	st.global.b32 	[%rd30], %r12;
-	add.s64 	%rd38, %rd38, 4;
-	setp.ne.b64 	%p3, %rd38, 64;
-	@%p3 bra 	$L__BB0_4;
-	bra.uni 	$L__BB0_5;
-$L__BB0_6:
+	add.s64 	%rd23, %rd24, %rd31;
+	st.global.b32 	[%rd23], %r12;
+	add.s64 	%rd31, %rd31, 4;
+	setp.ne.b64 	%p1, %rd31, 64;
+	@%p1 bra 	$L__BB0_2;
+	add.s64 	%rd2, %rd30, 1;
+	add.s64 	%rd29, %rd29, 256;
+	add.s64 	%rd28, %rd28, 256;
+	add.s64 	%rd27, %rd27, 256;
+	add.s64 	%rd26, %rd26, 256;
+	add.s64 	%rd25, %rd25, 256;
+	add.s64 	%rd24, %rd24, 256;
+	setp.ne.b64 	%p2, %rd30, %rd1;
+	mov.b64 	%rd30, %rd2;
+	@%p2 bra 	$L__BB0_1;
 	ret;
 
 }
 ```
 
+5. **Allocate device buffers**
+
+Pseudocode:
+```
+for tensor in program
+	if tensor is root
+		copy host elements to device
+	else
+		alloc empty intermediate buffer on device
+```
+
+7. **Launch kernel(s)**
+
 work in progress...
+
+9. **Copy back and wrap Tensor result**
+
+```
+Tensor[Mul], dtype=.f32, shape={ 32, 64 }, num_inputs=2
+{ 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6 }
+```
