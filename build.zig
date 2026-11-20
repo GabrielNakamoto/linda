@@ -8,12 +8,15 @@ pub fn build(b: *std.Build) void {
         .target = target,
     });
 
+    // TODO: autodetect from hardware/drivers?
     const enable_cuda = b.option(bool, "cuda", "Build the CUDA runtime") orelse false;
+    const enable_metal = b.option(bool, "metal", "Build/link the METAL runtime") orelse false;
     const llvm_path = b.option(std.Build.LazyPath, "llvm_path", "local path to llvm")
       orelse std.Build.LazyPath{ .cwd_relative = "/opt/homebrew/opt/llvm"};
 
     const options = b.addOptions();
     options.addOption(bool, "cuda", enable_cuda);
+    options.addOption(bool, "metal", enable_metal);
     options.addOption([]const u8, "llvm_path", llvm_path.getDisplayName());
     mod.addOptions("build_options", options);
 
@@ -44,8 +47,8 @@ pub fn build(b: *std.Build) void {
       exe.root_module.linkSystemLibrary("MLIRCAPI" ++ lib, .{ .preferred_link_mode = .static });
     }
 
-    exe.root_module.linkSystemLibrary("MLIR", .{ .preferred_link_mode = .dynamic });
-    exe.root_module.linkSystemLibrary("LLVM", .{ .preferred_link_mode = .dynamic });
+    exe.root_module.linkSystemLibrary("MLIR", .{});
+    exe.root_module.linkSystemLibrary("LLVM", .{});
 
     // custom mlir dialect
     exe.root_module.addIncludePath(b.path("mlir/include"));
@@ -61,6 +64,14 @@ pub fn build(b: *std.Build) void {
 
       exe.root_module.linkSystemLibrary("cuda", .{});
       exe.root_module.linkSystemLibrary("nvrtc", .{});
+    }
+
+    // link custom metal runtime bridge
+    if (enable_metal) {
+      // TODO: rather then fragemented shell scripts fold the swiftc step into here
+      exe.root_module.addLibraryPath(b.path("lmrb/build"));
+      exe.root_module.linkSystemLibrary("LMRB", .{});
+      exe.root_module.addRPath(b.path("lmrb/build"));
     }
 
     b.installArtifact(exe);
