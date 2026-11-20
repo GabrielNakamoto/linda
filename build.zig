@@ -8,6 +8,15 @@ pub fn build(b: *std.Build) void {
         .target = target,
     });
 
+    const enable_cuda = b.option(bool, "cuda", "Build the CUDA runtime") orelse false;
+    const llvm_path = b.option(std.Build.LazyPath, "llvm_path", "local path to llvm")
+      orelse std.Build.LazyPath{ .cwd_relative = "/opt/homebrew/opt/llvm"};
+
+    const options = b.addOptions();
+    options.addOption(bool, "cuda", enable_cuda);
+    options.addOption([]const u8, "llvm_path", llvm_path.getDisplayName());
+    mod.addOptions("build_options", options);
+
     const exe = b.addExecutable(.{
         .name = "linda",
         .root_module = b.createModule(.{
@@ -17,8 +26,8 @@ pub fn build(b: *std.Build) void {
             .imports = &.{
                 .{ .name = "linda", .module = mod },
             },
-            .link_libc = true,
-            .link_libcpp = false
+            // .link_libc = true,
+            .link_libcpp = true
         }),
     });
 
@@ -28,12 +37,8 @@ pub fn build(b: *std.Build) void {
       "GPU", "NVVM", "ROCDL", "Conversion", "RegisterEverything",
     };
 
-    // TODO: make a note that this has to be configured per-user, make it a build arg/ENV var
-    // const llvm_prefix = "/opt/homebrew/opt/llvm";
-    const llvm_prefix = "/users/gnakamot/miniforge3";
-
-    exe.root_module.addIncludePath(.{ .cwd_relative = llvm_prefix ++ "/include" });
-    exe.root_module.addLibraryPath(.{ .cwd_relative = llvm_prefix ++ "/lib" });
+    exe.root_module.addIncludePath(llvm_path.path(b, "include"));
+    exe.root_module.addLibraryPath(llvm_path.path(b, "lib"));
 
     inline for (lib_lst) |lib| {
       exe.root_module.linkSystemLibrary("MLIRCAPI" ++ lib, .{ .preferred_link_mode = .static });
@@ -41,7 +46,6 @@ pub fn build(b: *std.Build) void {
 
     exe.root_module.linkSystemLibrary("MLIR", .{ .preferred_link_mode = .dynamic });
     exe.root_module.linkSystemLibrary("LLVM", .{ .preferred_link_mode = .dynamic });
-    exe.root_module.addObjectFile(.{ .cwd_relative = llvm_prefix ++ "/lib/libstdc++.so" });
 
     // custom mlir dialect
     exe.root_module.addIncludePath(b.path("mlir/include"));
@@ -50,12 +54,14 @@ pub fn build(b: *std.Build) void {
     exe.root_module.addObjectFile(b.path("mlir/lib/libMLIRLindaCAPI.a"));
 
     // setup zig binding cuda runtime dep
-    const cudaz_dep = b.dependency("cudaz", .{});
-    const cudaz_module = cudaz_dep.module("cudaz");
-    exe.root_module.addImport("cudaz", cudaz_module);
+    if (enable_cuda) {
+      const cudaz_dep = b.dependency("cudaz", .{});
+      const cudaz_module = cudaz_dep.module("cudaz");
+      exe.root_module.addImport("cudaz", cudaz_module);
 
-    exe.root_module.linkSystemLibrary("cuda", .{});
-    exe.root_module.linkSystemLibrary("nvrtc", .{});
+      exe.root_module.linkSystemLibrary("cuda", .{});
+      exe.root_module.linkSystemLibrary("nvrtc", .{});
+    }
 
     b.installArtifact(exe);
 

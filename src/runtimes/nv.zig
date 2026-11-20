@@ -1,6 +1,6 @@
 const std = @import("std");
-const cudaz = @import("cudaz");
 const tensor = @import("tensor.zig");
+const cudaz = @import("cudaz");
 const cuda = cudaz.CAPI.cuda;
 
 pub fn launchCUDAKernel( comptime T: type, gpa: std.mem.Allocator, ptx: [:0]const u8,

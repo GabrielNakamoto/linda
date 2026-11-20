@@ -2,7 +2,7 @@ const std = @import("std");
 const mlir = @import("mlir.zig");
 const backend = @import("backend.zig");
 const cuda = @import("cudaz");
-const runtime = @import("runtime.zig");
+// const runtime = @import("runtime.zig");
 const helpers = @import("helpers.zig");
 
 pub const IROp = enum {
@@ -140,13 +140,13 @@ pub fn Tensor(comptime T: type) type {
       defer mlir_gen.deinit();
 
       const mlirModule = try mlir_gen.compileTensorSchedule(tensor_schedule);
-      const ptx = try backend.compileKernelModule(mlir_gen.ctx, mlirModule, self.ctx.targetArch, self.ctx.debug);
+      _ = try backend.compileKernelModule(mlir_gen.ctx, mlirModule, self.ctx.targetArch, self.ctx.debug);
 
-      const hostResult = try runtime.launchCUDAKernel(T, self.ctx.compile_arena.allocator(), ptx, tensor_schedule);
+      // const hostResult = try runtime.launchCUDAKernel(T, self.ctx.compile_arena.allocator(), ptx, tensor_schedule);
 
       const new_node = try self.ctx.arena.allocator().create(Node);
       new_node.* = self.node.*;
-      new_node.*.data = std.mem.sliceAsBytes(hostResult);
+      // new_node.*.data = std.mem.sliceAsBytes(hostResult);
       return .{ .node = new_node, .ctx = self.ctx };
     }
   };
