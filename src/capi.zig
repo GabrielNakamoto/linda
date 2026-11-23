@@ -15,6 +15,7 @@ pub const imports = @cImport({
   @cInclude("mlir-c/Dialect/Func.h");
 
 	// custom mlir CAPI
+  @cInclude("linda-c/MSL.h");
   @cInclude("linda-c/Passes.h");
   @cInclude("linda-c/Dialect.h");
 });

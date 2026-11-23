@@ -2,10 +2,10 @@ const std = @import("std");
 const c = @import("capi.zig").imports;
 const helpers = @import("helpers.zig");
 
-const Arch = enum { NV, METAL };
+pub const Arch = enum { NV, METAL };
 
 // TODO: pass sm version for ptx
-pub fn compileKernel(mlirCtx: c.MlirContext, mlirModule: c.MlirModule, arch: Arch, debug: bool) ![:0]const u8 {
+pub fn compileKernel(mlirCtx: c.MlirContext, mlirModule: c.MlirModule, arch: Arch, debug: bool) ![]const u8 {
   return switch (arch) {
     .NV => compilePTX(mlirCtx, mlirModule, debug),
     .METAL => compileMetal(mlirCtx, mlirModule, debug)
@@ -14,10 +14,12 @@ pub fn compileKernel(mlirCtx: c.MlirContext, mlirModule: c.MlirModule, arch: Arc
 
 // ********* METAL **********
 
-fn compileMetal(mlirCtx: c.MlirContext, mlirModule: c.MlirModule, debug: bool) ![:0]const u8 {
-  // no existing dialect... handwritten rewrite passes in C++?
-  // what subset of the ISA am I targetting, what does metal IR look like?
-  // should it render to .metal
+fn compileMetal(mlirCtx: c.MlirContext, mlirModule: c.MlirModule, debug: bool) ![]const u8 {
+  _ = debug;
+  _ = mlirCtx;
+  const raw = c.mlirLindaTranslateModuleToMSL(mlirModule) orelse return error.MSLTranslationFailed;
+  // TODO: when does this get freed?
+  return std.mem.span(raw);
 }
 
 // ********* NVIDIA **********
@@ -35,7 +37,7 @@ fn extractGpuBinary(module: c.MlirModule) !c.MlirStringRef {
   return c.mlirGPUObjectAttrGetObject(object);
 }
 
-fn compilePTX(mlirCtx: c.MlirContext, mlirModule: c.MlirModule, debug: bool) ![:0]const u8 {
+fn compilePTX(mlirCtx: c.MlirContext, mlirModule: c.MlirModule, debug: bool) ![]const u8 {
   const pm = c.mlirPassManagerCreate(mlirCtx);
 
   if (debug) {

@@ -10,7 +10,7 @@
 
 using namespace mlir;
 
-char *mlirTranslateModuleToMSL(MlirModule module) {
+char *mlirLindaTranslateModuleToMSL(MlirModule module) {
   std::string buffer;
   llvm::raw_string_ostream os(buffer);
 
