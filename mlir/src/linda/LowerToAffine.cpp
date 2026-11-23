@@ -1,5 +1,5 @@
 #include "linda/Dialect.h"
-#include "linda/Passes.h"
+#include "linda/LowerToAffine.h"
 
 #include "mlir/IR/BuiltinDialect.h"
 #include "mlir/IR/BuiltinOps.h"

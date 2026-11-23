@@ -2,16 +2,25 @@ const std = @import("std");
 const c = @import("capi.zig").imports;
 const helpers = @import("helpers.zig");
 
-const Arch = enum { NV, AMD };
+const Arch = enum { NV, METAL };
 
-pub const Accelerator = struct {
-  arch: Arch,
-  triple: []const u8,
-  cpu: []const u8
-};
+// TODO: pass sm version for ptx
+pub fn compileKernel(mlirCtx: c.MlirContext, mlirModule: c.MlirModule, arch: Arch, debug: bool) ![:0]const u8 {
+  return switch (arch) {
+    .NV => compilePTX(mlirCtx, mlirModule, debug),
+    .METAL => compileMetal(mlirCtx, mlirModule, debug)
+  };
+}
 
-pub const RDNA3: Accelerator = .{ .arch = .AMD, .triple = "amdgcn-amd-amdhsa", .cpu = "gfx1100" };
-pub const NVPTX: Accelerator = .{ .arch = .NV, .triple = "nvptx-nvidia-cuda", .cpu = "sm_86" };
+// ********* METAL **********
+
+fn compileMetal(mlirCtx: c.MlirContext, mlirModule: c.MlirModule, debug: bool) ![:0]const u8 {
+  // no existing dialect... handwritten rewrite passes in C++?
+  // what subset of the ISA am I targetting, what does metal IR look like?
+  // should it render to .metal
+}
+
+// ********* NVIDIA **********
 
 fn extractGpuBinary(module: c.MlirModule) !c.MlirStringRef {
   const moduleOp = c.mlirModuleGetOperation(module);
@@ -26,13 +35,9 @@ fn extractGpuBinary(module: c.MlirModule) !c.MlirStringRef {
   return c.mlirGPUObjectAttrGetObject(object);
 }
 
-pub fn compileKernelModule(mlirCtx: c.MlirContext, mlirModule: c.MlirModule, arch: Accelerator, debug: bool) ![:0]const u8 {
-  _ = arch;
+fn compilePTX(mlirCtx: c.MlirContext, mlirModule: c.MlirModule, debug: bool) ![:0]const u8 {
   const pm = c.mlirPassManagerCreate(mlirCtx);
-  //const gpuToArchPass = switch (arch.arch) {
-    //.NV => c.mlirCreateConversionConvertGpuOpsToNVVMOps(),
-    //.AMD => c.mlirCreateConversionConvertGpuOpsToROCDLOps()
-  //};
+
   if (debug) {
     c.mlirPassManagerEnableIRPrinting(
       pm, true, true, true, false, false, c.mlirOpPrintingFlagsCreate(), helpers.stringRef("dump/")
@@ -65,3 +70,4 @@ pub fn compileKernelModule(mlirCtx: c.MlirContext, mlirModule: c.MlirModule, arc
 
   return slice;
 }
+
