@@ -1,5 +1,6 @@
 add_mlir_public_c_api_library(MLIRLindaCAPI
   linda-c/Passes.cpp
+  linda-c/MSL.cpp
   linda-c/Dialect.cpp
 
   DEPENDS

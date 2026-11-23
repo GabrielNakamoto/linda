@@ -1,3 +1,6 @@
+#include "linda/MSL.h"
+
+#include "mlir/Tools/mlir-translate/Translation.h"
 #include "mlir/IR/BuiltinDialect.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/BuiltinTypes.h"
@@ -32,8 +35,6 @@ private:
   llvm::raw_ostream &os;
 };
 
-}
-
 MSLEmitter::MSLEmitter(llvm::raw_ostream &output) : os(output) {}
 
 LogicalResult MSLEmitter::emitModule(gpu::GPUModuleOp gpuModule) {
@@ -49,16 +50,23 @@ LogicalResult MSLEmitter::emitModule(gpu::GPUModuleOp gpuModule) {
 
   return success();
 }
+
 LogicalResult MSLEmitter::emitType(Value val) {
   Type type = val.getType();
-
   std::string rep = "";
-  if (type.isF32()) rep = "float";
-  if (type.isF16()) rep = "half";
-  if (type.isF64()) rep = "double";
-  if (type.isInteger())
-    rep = (type.isUnsignedInteger() ? "u" : "") + std::string("int")
+
+  if (auto memrefType = llvm::dyn_cast<MemRefType>(type)) {
+    rep = "*";
+    type = memrefType.getElementType();
+  }
+
+  if (type.isF32()) rep += "float";
+  else if (type.isF16()) rep += "half";
+  else if (type.isF64()) rep += "double";
+  else if (type.isInteger()) {
+    rep += (type.isUnsignedInteger() ? "u" : "") + std::string("int")
       + std::to_string(type.getIntOrFloatBitWidth()) + "_t";
+  }
   if (rep == "") return failure();
 
   os << rep;
@@ -69,7 +77,7 @@ LogicalResult MSLEmitter::emitType(Value val) {
 LogicalResult MSLEmitter::emitBinary(Operation *op, std::string _operator) {
   if (op->getNumOperands() != 2) return failure();
 
-  this->emitType(op->getResult(0));
+  if (failed(this->emitType(op->getResult(0)))) return failure();
   os << " ";
   op->getResult(0).print(os);
   os << " = ";
@@ -118,7 +126,7 @@ LogicalResult MSLEmitter::emitOp(Operation &op) {
       return success();
     })
     .Case<arith::ConstantOp>([&](auto x) {
-      this->emitType(x.getResult());
+      if (failed(this->emitType(x.getResult()))) return failure();
       x.getResult().print(os);
 
       os << " = ";
@@ -134,12 +142,12 @@ LogicalResult MSLEmitter::emitOp(Operation &op) {
     .Case<memref::LoadOp>([&](auto x) {
       auto buf = x.getMemref();
 
-      this->emitType(x.getResult());
+      if (failed(this->emitType(x.getResult()))) return failure();
       os << " ";
       x.getResult().print(os);
       os << " = ";
       buf.print(os);
-      this->emitOffset(x.getIndices(), buf.getType().getShape());
+      if (failed(this->emitOffset(x.getIndices(), buf.getType().getShape()))) return failure();
       os << ";\n";
       return success();
     })
@@ -147,7 +155,7 @@ LogicalResult MSLEmitter::emitOp(Operation &op) {
       auto buf = x.getMemref();
 
       buf.print(os);
-      this->emitOffset(x.getIndices(), buf.getType().getShape());
+      if (failed(this->emitOffset(x.getIndices(), buf.getType().getShape()))) return failure();
       os << " = ";
       x.getValue().print(os);
       os << ";\n";
@@ -169,7 +177,7 @@ LogicalResult MSLEmitter::emitOp(Operation &op) {
       os << ") {\n";
       for (auto &bb : x.getRegion().getBlocks())
         for (auto &op : bb.getOperations())
-          this->emitOp(op);
+          if (failed(this->emitOp(op))) return failure();
       os << "}\n";
       return success();
     });
@@ -180,7 +188,7 @@ LogicalResult MSLEmitter::emitKernel(gpu::GPUFuncOp &op) {
   os << "kernel void " << op.getName().str() << "(\n";
 
   for (auto &arg : op.getArguments()) {
-    this->emitType(arg); // TODO: this needs to handle memref ptr conversions
+    if (failed(this->emitType(arg))) return failure(); // TODO: this needs to handle memref ptr conversions
     os << " ";
     arg.print(os);
     os << ",\n";
@@ -193,11 +201,15 @@ LogicalResult MSLEmitter::emitKernel(gpu::GPUFuncOp &op) {
 
   for (auto &bb : op.getRegion().getBlocks())
     for (auto &op : bb.getOperations())
-      this->emitOp(op);
+      if (failed(this->emitOp(op))) return failure();
 
   os << "}";
   return success();
 }
+
+}
+
+namespace linda {
 
 LogicalResult translateToMSL(mlir::ModuleOp module, llvm::raw_ostream &output) {
   bool foundKernelModule = false;
@@ -213,4 +225,21 @@ LogicalResult translateToMSL(mlir::ModuleOp module, llvm::raw_ostream &output) {
   if (! foundKernelModule)
     return module.emitError("expected at least one gpu.module");
   return success();
+}
+
+void registerMSLTranslation() {
+  TranslateFromMLIRRegistration registration(
+    "gpu-to-msl",
+    "Custom minimal translation pass from MLIR GPU module to Metal Shading Language",
+    [](ModuleOp module, llvm::raw_ostream &output) -> LogicalResult { return translateToMSL(module, output); },
+    [](mlir::DialectRegistry &registry) {
+    registry.insert<
+      arith::ArithDialect,
+      memref::MemRefDialect,
+      gpu::GPUDialect,
+      scf::SCFDialect
+    >();
+  });
+}
+
 }
