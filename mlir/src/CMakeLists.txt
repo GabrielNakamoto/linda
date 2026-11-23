@@ -32,7 +32,8 @@ target_include_directories(MLIRLinda
 
 
 add_mlir_conversion_library(MLIRLindaPasses
-  linda/Passes.cpp
+  linda/LowerToAffine.cpp
+  linda/MSLEmitter.cpp
 
   PARTIAL_SOURCES_INTENDED
 
