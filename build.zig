@@ -20,12 +20,6 @@ pub fn build(b: *std.Build) void {
     options.addOption([]const u8, "llvm_path", llvm_path.getDisplayName());
     mod.addOptions("build_options", options);
 
-    const cmake_config = b.addSystemCommand(&.{
-      "cmake", "-S", "mlir", "-B", "zig-out/cmake-build", "-DCMAKE_BUILD_TYPE=Release"
-    });
-    const cmake =  b.addSystemCommand(&.{"cmake", "--build", "zig-out/cmake-build", "--parallel"});
-    cmake.step.dependOn(&cmake_config.step);
-
     const exe = b.addExecutable(.{
         .name = "linda",
         .root_module = b.createModule(.{
@@ -40,6 +34,12 @@ pub fn build(b: *std.Build) void {
         }),
     });
 
+    // run cmake build for MLIR dylibs first
+    const cmake_config = b.addSystemCommand(&.{
+      "cmake", "-S", "mlir", "-B", "zig-out/cmake-build", "-DCMAKE_BUILD_TYPE=Release"
+    });
+    const cmake =  b.addSystemCommand(&.{"cmake", "--build", "zig-out/cmake-build", "--parallel"});
+    cmake.step.dependOn(&cmake_config.step);
     exe.step.dependOn(&cmake.step);
 
     // https://github.com/NaleRaphael/mlir_toy/blob/master/src/Ch2/build.zig
@@ -76,10 +76,25 @@ pub fn build(b: *std.Build) void {
 
     // link custom metal runtime bridge
     if (enable_metal) {
+      const initDir = b.addInstallDirectory(.{
+        .source_dir = b.path("lmrb"), .install_dir = .prefix, .install_subdir = "lmrb"
+        });
+
+      const swift_command = b.addSystemCommand(&.{
+        "swiftc", "-O", "-parse-as-library", "-emit-library", "-emit-module", "-module-name", "LMRB",
+        "-emit-objc-header-path", "zig-out/lmrb/LMRB",
+        "-Xlinker", "-install_name",
+        "-Xlinker", "@rpath/liblmrb.dylib",
+        "zig-out/lmrb/runtime.swift", "-o", "zig-out/lmrb/liblmrb.dylib"
+      });
+
+      swift_command.step.dependOn(&initDir.step);
+      exe.step.dependOn(&swift_command.step);
+
       // TODO: rather then fragemented shell scripts fold the swiftc step into here
-      exe.root_module.addLibraryPath(b.path("lmrb/build"));
+      exe.root_module.addLibraryPath(b.path("zig-out/lmrb"));
       exe.root_module.linkSystemLibrary("LMRB", .{});
-      exe.root_module.addRPath(b.path("lmrb/build"));
+      exe.root_module.addRPath(b.path("zig-out/lmrb"));
     }
 
     b.installArtifact(exe);
