@@ -20,6 +20,12 @@ pub fn build(b: *std.Build) void {
     options.addOption([]const u8, "llvm_path", llvm_path.getDisplayName());
     mod.addOptions("build_options", options);
 
+    const cmake_config = b.addSystemCommand(&.{
+      "cmake", "-S", "mlir", "-B", "zig-out/cmake-build", "-DCMAKE_BUILD_TYPE=Release"
+    });
+    const cmake =  b.addSystemCommand(&.{"cmake", "--build", "zig-out/cmake-build", "--parallel"});
+    cmake.step.dependOn(&cmake_config.step);
+
     const exe = b.addExecutable(.{
         .name = "linda",
         .root_module = b.createModule(.{
@@ -33,6 +39,8 @@ pub fn build(b: *std.Build) void {
             .link_libcpp = true
         }),
     });
+
+    exe.step.dependOn(&cmake.step);
 
     // https://github.com/NaleRaphael/mlir_toy/blob/master/src/Ch2/build.zig
     const lib_lst = [_][]const u8 {
@@ -52,9 +60,9 @@ pub fn build(b: *std.Build) void {
 
     // custom mlir dialect
     exe.root_module.addIncludePath(b.path("mlir/include"));
-    exe.root_module.addObjectFile(b.path("mlir/lib/libMLIRLinda.a"));
-    exe.root_module.addObjectFile(b.path("mlir/lib/libMLIRLindaPasses.a"));
-    exe.root_module.addObjectFile(b.path("mlir/lib/libMLIRLindaCAPI.a"));
+    exe.root_module.addObjectFile(b.path("zig-out/cmake-build/lib/libMLIRLinda.a"));
+    exe.root_module.addObjectFile(b.path("zig-out/cmake-build/lib/libMLIRLindaPasses.a"));
+    exe.root_module.addObjectFile(b.path("zig-out/cmake-build/lib/libMLIRLindaCAPI.a"));
 
     // setup zig binding cuda runtime dep
     if (enable_cuda) {
@@ -80,7 +88,6 @@ pub fn build(b: *std.Build) void {
 
     const run_cmd = b.addRunArtifact(exe);
     run_step.dependOn(&run_cmd.step);
-
     run_cmd.step.dependOn(b.getInstallStep());
 
     if (b.args) |args| {

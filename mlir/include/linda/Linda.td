@@ -13,7 +13,7 @@ def LindaDialect : Dialect {
   }];
 
   let description = [{
-    You know whats better then a loving embrace?
+    You know whats better than a loving embrace?
 A compiler for the end of Moores law!
 
 Don't become an incel kids; become a hacker.

@@ -181,11 +181,8 @@ LogicalResult MSLEmitter::emitOp(Operation &op, Operation *scopeOp, int depth) {
       os << "+=";
       x.getStep().printAsOperand(os, state);
       os << ") {\n";
-      for (auto &bb : x.getRegion().getBlocks()) {
-        for (auto &op : bb.getOperations()) {
+      for (auto &bb : x.getRegion().getBlocks()) for (auto &op : bb.getOperations())
           if (failed(this->emitOp(op, scopeOp, depth+1))) return failure();
-        }
-      }
       os << "}\n";
       return success();
     })
@@ -207,10 +204,8 @@ LogicalResult MSLEmitter::emitKernel(gpu::GPUFuncOp &op) {
     os << ",\n";
   }
 
-  os << "  uint3 gdim [[threads_per_grid]],\n";
-  os << "  uint3 ldim [[threadgroups_per_grid]],\n";
-  os << "  uint3 gidx [[thread_position_in_grid]],\n";
-  os << "  uint3 lidx [[thread_position_in_threadgroup]])\n{\n";
+  os << "  uint3 gdim [[threads_per_grid]],\n  uint3 ldim [[threadgroups_per_grid]],\n";
+  os << "  uint3 gidx [[thread_position_in_grid]],\n  uint3 lidx [[thread_position_in_threadgroup]])\n{\n";
 
   for (auto &bb : op.getRegion().getBlocks())
     for (auto &_op : bb.getOperations())
@@ -246,12 +241,7 @@ void registerMSLTranslation() {
     "Custom minimal translation pass from MLIR GPU module to Metal Shading Language",
     [](ModuleOp module, llvm::raw_ostream &output) -> LogicalResult { return translateToMSL(module, output); },
     [](mlir::DialectRegistry &registry) {
-    registry.insert<
-      arith::ArithDialect,
-      memref::MemRefDialect,
-      gpu::GPUDialect,
-      scf::SCFDialect
-    >();
+    registry.insert<arith::ArithDialect, memref::MemRefDialect, gpu::GPUDialect, scf::SCFDialect>();
   });
 }
 

@@ -29,7 +29,7 @@ fn compileMetal(io: std.Io, gpa: std.mem.Allocator, mlirCtx: c.MlirContext, mlir
   defer std.c.free(raw);
 
   const kernel = try std.mem.replaceOwned(u8, gpa, std.mem.span(raw), "%", "_");
-  if (debug) std.debug.print("{s}", .{kernel});
+  if (debug) std.debug.print("{s}\n", .{kernel});
 
   // (3) compile string to .metallib binary loadable by swift runtime using child process call
   const argv = [_][]const u8{ "xcrun", "-sdk", "macosx", "metal", "-x", "metal", "-", "-o", "kernel.metallib" };
