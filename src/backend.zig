@@ -5,15 +5,15 @@ const helpers = @import("helpers.zig");
 pub const Arch = enum { NV, METAL };
 
 // TODO: pass sm version for ptx
-pub fn compileKernel(mlirCtx: c.MlirContext, mlirModule: c.MlirModule, arch: Arch, debug: bool) ![]const u8 {
+pub fn compileKernel(gpa: std.mem.Allocator, mlirCtx: c.MlirContext, mlirModule: c.MlirModule, arch: Arch, debug: bool) ![]const u8 {
   return switch (arch) {
     .NV => compilePTX(mlirCtx, mlirModule, debug),
-    .METAL => compileMetal(mlirCtx, mlirModule, debug)
+    .METAL => compileMetal(gpa, mlirCtx, mlirModule, debug)
   };
 }
 
 // ********* METAL **********
-fn compileMetal(mlirCtx: c.MlirContext, mlirModule: c.MlirModule, debug: bool) ![]const u8 {
+fn compileMetal(gpa: std.mem.Allocator, mlirCtx: c.MlirContext, mlirModule: c.MlirModule, debug: bool) ![]const u8 {
   // (1) need to lower affine -> scf first
   const pm = c.mlirPassManagerCreate(mlirCtx);
   const opPm = c.mlirPassManagerGetAsOpPassManager(pm);
@@ -21,15 +21,14 @@ fn compileMetal(mlirCtx: c.MlirContext, mlirModule: c.MlirModule, debug: bool) !
     opPm, helpers.stringRef("gpu.module(lower-affine)"), helpers.pipelineDiagnostic, null));
   helpers.mlirAssertGood(c.mlirPassManagerRunOnOp(pm, c.mlirModuleGetOperation(mlirModule)));
 
-  if (debug) {
-    c.mlirOperationDump(c.mlirModuleGetOperation(mlirModule));
-  }
+  if (debug) c.mlirOperationDump(c.mlirModuleGetOperation(mlirModule));
 
   const raw = c.mlirLindaTranslateModuleToMSL(mlirModule) orelse return error.MSLTranslationFailed;
-  std.debug.print("{s}", .{raw});
+  defer std.c.free(raw);
 
-  // TODO: when does this get freed?
-  return std.mem.span(raw);
+  const kernel = try std.mem.replaceOwned(u8, gpa, std.mem.span(raw), "%", "_");
+  if (debug) std.debug.print("{s}", .{kernel});
+  return kernel;
 }
 
 // ********* NVIDIA **********

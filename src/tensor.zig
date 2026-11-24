@@ -140,7 +140,7 @@ pub fn Tensor(comptime T: type) type {
       defer mlir_gen.deinit();
 
       const mlirModule = try mlir_gen.compileTensorSchedule(tensor_schedule);
-      _ = try backend.compileKernel(mlir_gen.ctx, mlirModule, self.ctx.targetArch, self.ctx.debug);
+      _ = try backend.compileKernel(self.ctx.compile_arena.allocator(), mlir_gen.ctx, mlirModule, self.ctx.targetArch, self.ctx.debug);
 
       // const hostResult = try runtime.launchCUDAKernel(T, self.ctx.compile_arena.allocator(), ptx, tensor_schedule);
 
