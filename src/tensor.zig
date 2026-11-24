@@ -24,13 +24,15 @@ pub fn dtypeOf(comptime T: type) DType {
 }
 
 pub const TensorCtx = struct {
-  targetArch: backend.Accelerator,
+  targetArch: backend.Arch,
   arena: std.heap.ArenaAllocator,
   compile_arena: std.heap.ArenaAllocator,
   debug: bool,
+  io: std.Io,
 
-  pub fn init(backing: std.mem.Allocator, arch: backend.Accelerator, debug: bool) TensorCtx {
+  pub fn init(io: std.Io, backing: std.mem.Allocator, arch: backend.Arch, debug: bool) TensorCtx {
     return .{
+      .io = io,
       .arena = .init(backing),
       .compile_arena = .init(backing),
       .debug = debug,
@@ -140,7 +142,8 @@ pub fn Tensor(comptime T: type) type {
       defer mlir_gen.deinit();
 
       const mlirModule = try mlir_gen.compileTensorSchedule(tensor_schedule);
-      _ = try backend.compileKernelModule(mlir_gen.ctx, mlirModule, self.ctx.targetArch, self.ctx.debug);
+      _ = try backend.compileKernel(
+        self.ctx.io, self.ctx.compile_arena.allocator(), mlir_gen.ctx, mlirModule, self.ctx.targetArch, self.ctx.debug);
 
       // const hostResult = try runtime.launchCUDAKernel(T, self.ctx.compile_arena.allocator(), ptx, tensor_schedule);
 

@@ -1,5 +1,6 @@
 add_mlir_public_c_api_library(MLIRLindaCAPI
   linda-c/Passes.cpp
+  linda-c/MSL.cpp
   linda-c/Dialect.cpp
 
   DEPENDS
@@ -32,7 +33,8 @@ target_include_directories(MLIRLinda
 
 
 add_mlir_conversion_library(MLIRLindaPasses
-  linda/Passes.cpp
+  linda/LowerToAffine.cpp
+  linda/MSLEmitter.cpp
 
   PARTIAL_SOURCES_INTENDED
 

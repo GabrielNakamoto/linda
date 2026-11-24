@@ -5,11 +5,11 @@ const backend = @import("backend.zig");
 const Tensor = tensor.Tensor;
 
 // TODO: github actions CI for tests?
-pub fn main() !void {
+pub fn main(init: std.process.Init) !void {
   var gpa = std.heap.DebugAllocator(.{}).init;
   defer _ = gpa.deinit();
 
-  var ctx = tensor.TensorCtx.init(gpa.allocator(), backend.NVPTX, false);
+  var ctx = tensor.TensorCtx.init(init.io, gpa.allocator(), .METAL, true);
   defer ctx.deinit();
 
   const a = try Tensor(f32).ones(&ctx, &.{32, 64});
