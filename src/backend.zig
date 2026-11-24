@@ -5,15 +5,15 @@ const helpers = @import("helpers.zig");
 pub const Arch = enum { NV, METAL };
 
 // TODO: pass sm version for ptx
-pub fn compileKernel(io: std.Io, gpa: std.mem.Allocator, mlirCtx: c.MlirContext, mlirModule: c.MlirModule, arch: Arch, debug: bool) ![]const u8 {
+pub fn compileKernel(gpa: std.mem.Allocator, mlirCtx: c.MlirContext, mlirModule: c.MlirModule, arch: Arch, debug: bool) ![]const u8 {
   return switch (arch) {
     .NV => compilePTX(mlirCtx, mlirModule, debug),
-    .METAL => compileMetal(io, gpa, mlirCtx, mlirModule, debug)
+    .METAL => compileMetal(gpa, mlirCtx, mlirModule, debug)
   };
 }
 
 // ********* METAL **********
-fn compileMetal(io: std.Io, gpa: std.mem.Allocator, mlirCtx: c.MlirContext, mlirModule: c.MlirModule, debug: bool) ![]const u8 {
+fn compileMetal(gpa: std.mem.Allocator, mlirCtx: c.MlirContext, mlirModule: c.MlirModule, debug: bool) ![]const u8 {
   // (1) need to lower affine -> scf first
   const pm = c.mlirPassManagerCreate(mlirCtx);
   const opPm = c.mlirPassManagerGetAsOpPassManager(pm);
@@ -30,35 +30,6 @@ fn compileMetal(io: std.Io, gpa: std.mem.Allocator, mlirCtx: c.MlirContext, mlir
 
   const kernel = try std.mem.replaceOwned(u8, gpa, std.mem.span(raw), "%", "_");
   if (debug) std.debug.print("{s}\n", .{kernel});
-
-  // (3) compile string to .metallib binary loadable by swift runtime using child process call
-  const argv = [_][]const u8{ "xcrun", "-sdk", "macosx", "metal", "-x", "metal", "-", "-o", "kernel.metallib" };
-  var child = try std.process.spawn(io, .{ .argv = &argv, .stdin = .pipe, .stdout = .pipe, .stderr = .pipe });
-
-  var stdin_buf: [2048]u8 = undefined;
-  var stdin_writer = child.stdin.?.writerStreaming(io, &stdin_buf);
-  try stdin_writer.interface.writeAll(kernel);
-  try stdin_writer.interface.flush();
-  child.stdin.?.close(io);
-  child.stdin = null;
-
-  var stderr_buf: [2048]u8 = undefined;
-  var stderr_reader = child.stderr.?.readerStreaming(io, &stderr_buf);
-  const stderr_output = try stderr_reader.interface.allocRemaining(gpa, .limited(64 * 1024));
-  defer gpa.free(stderr_output);
-
-  const term = try child.wait(io);
-
-  switch (term) {
-    .exited => |code| {
-      if (code != 0) {
-        std.debug.print("MSL Compile Exited with code: {d}\n{s}\n", .{code, stderr_output});
-        return error.MSLCompileFailed;
-      }
-    },
-    else => return error.MSLCompileFailed
-  }
-
   return kernel;
 }
 

@@ -19,6 +19,6 @@ pub const MetalRuntime = struct {
     }
   }
 
-  pub fn exec(self: Self, gpa: std.mem.Allocator, image: []const u8) !void {
+  pub fn exec(self: Self, gpa: std.mem.Allocator, metallib: []const u8) !void {
   }
 }
