@@ -9,7 +9,7 @@ pub fn main() !void {
   var gpa = std.heap.DebugAllocator(.{}).init;
   defer _ = gpa.deinit();
 
-  var ctx = tensor.TensorCtx.init(gpa.allocator(), .METAL, false);
+  var ctx = tensor.TensorCtx.init(gpa.allocator(), .METAL, true);
   defer ctx.deinit();
 
   const a = try Tensor(f32).ones(&ctx, &.{32, 64});

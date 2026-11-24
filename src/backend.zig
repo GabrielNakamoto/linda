@@ -26,6 +26,7 @@ fn compileMetal(mlirCtx: c.MlirContext, mlirModule: c.MlirModule, debug: bool) !
   }
 
   const raw = c.mlirLindaTranslateModuleToMSL(mlirModule) orelse return error.MSLTranslationFailed;
+  std.debug.print("{s}", .{raw});
 
   // TODO: when does this get freed?
   return std.mem.span(raw);
