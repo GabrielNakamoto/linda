@@ -14,3 +14,4 @@ tablegen_compile_commands.yml
 *.inc
 lib/
 dump/
+lmrb/build/
