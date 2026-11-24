@@ -32,6 +32,7 @@ private:
   LogicalResult emitType(Value val);
   LogicalResult emitBinary(Operation *op, std::string _operator, AsmState &state);
   LogicalResult emitOffset(Operation::operand_range indices, llvm::ArrayRef<int64_t> shape, AsmState &state);
+  LogicalResult emitGPUVar(Operation *op, std::string tag, AsmState &state, gpu::Dimension dim);
 
   llvm::raw_ostream &os;
 };
@@ -109,35 +110,22 @@ LogicalResult MSLEmitter::emitOffset(Operation::operand_range indices, llvm::Arr
   return success();
 }
 
+LogicalResult MSLEmitter::emitGPUVar(Operation *op, std::string tag, AsmState &state, gpu::Dimension dim) {
+  os << "size_t ";
+  op->getResult(0).printAsOperand(os, state);
+  os << " = " << tag << "." << gpu::stringifyDimension(dim) << ";\n";
+  return success();
+}
+
 LogicalResult MSLEmitter::emitOp(Operation &op, Operation *scopeOp, int depth) {
   AsmState state(scopeOp);
   for (int i=0; i<depth; ++i) os << "  ";
   return TypeSwitch<Operation *, LogicalResult>(&op)
     .Case<scf::YieldOp, gpu::ReturnOp>([&](auto x) { return success(); })
-    .Case<gpu::GridDimOp>([&](auto x) {
-      os << "size_t ";
-      x.getResult().printAsOperand(os, state);
-      os << " = ldim." << gpu::stringifyDimension(x.getDimension()) << ";\n";
-      return success();
-    })
-    .Case<gpu::BlockDimOp>([&](auto x) {
-      os << "size_t ";
-      x.getResult().printAsOperand(os, state);
-      os << " = gdim." << gpu::stringifyDimension(x.getDimension()) << ";\n";
-      return success();
-    })
-    .Case<gpu::BlockIdOp>([&](auto x) {
-      os << "size_t ";
-      x.getResult().printAsOperand(os, state);
-      os << " = lidx." << gpu::stringifyDimension(x.getDimension()) << ";\n";
-      return success();
-    })
-    .Case<gpu::ThreadIdOp>([&](auto x) {
-      os << "size_t ";
-      x.getResult().printAsOperand(os, state);
-      os << " = gidx." << gpu::stringifyDimension(x.getDimension()) << ";\n";
-      return success();
-    })
+    .Case<gpu::GridDimOp>([&](auto x) { return this->emitGPUVar(x.getOperation(), "ldim", state, x.getDimension()); })
+    .Case<gpu::BlockDimOp>([&](auto x) { return this->emitGPUVar(x.getOperation(), "gdim", state, x.getDimension()); })
+    .Case<gpu::BlockIdOp>([&](auto x) { return this->emitGPUVar(x.getOperation(), "lidx", state, x.getDimension()); })
+    .Case<gpu::ThreadIdOp>([&](auto x) { return this->emitGPUVar(x.getOperation(), "gidx", state, x.getDimension()); })
     .Case<arith::ConstantOp>([&](auto x) -> LogicalResult {
       if (failed(this->emitType(x.getResult())))
         return x.emitOpError("couldn't emit result type") << ": " << x.getResult().getType();
@@ -179,6 +167,7 @@ LogicalResult MSLEmitter::emitOp(Operation &op, Operation *scopeOp, int depth) {
       return success();
     })
     .Case<scf::ForOp>([&](auto x) {
+      // TODO: cleaner way to chain/format this?
       os << "for (int ";
       x.getInductionVar().printAsOperand(os, state);
       os << "=";
