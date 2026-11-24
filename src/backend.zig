@@ -13,17 +13,25 @@ pub fn compileKernel(mlirCtx: c.MlirContext, mlirModule: c.MlirModule, arch: Arc
 }
 
 // ********* METAL **********
-
 fn compileMetal(mlirCtx: c.MlirContext, mlirModule: c.MlirModule, debug: bool) ![]const u8 {
-  _ = debug;
-  _ = mlirCtx;
+  // (1) need to lower affine -> scf first
+  const pm = c.mlirPassManagerCreate(mlirCtx);
+  const opPm = c.mlirPassManagerGetAsOpPassManager(pm);
+  helpers.mlirAssertGood(c.mlirOpPassManagerAddPipeline(
+    opPm, helpers.stringRef("gpu.module(lower-affine)"), helpers.pipelineDiagnostic, null));
+  helpers.mlirAssertGood(c.mlirPassManagerRunOnOp(pm, c.mlirModuleGetOperation(mlirModule)));
+
+  if (debug) {
+    c.mlirOperationDump(c.mlirModuleGetOperation(mlirModule));
+  }
+
   const raw = c.mlirLindaTranslateModuleToMSL(mlirModule) orelse return error.MSLTranslationFailed;
+
   // TODO: when does this get freed?
   return std.mem.span(raw);
 }
 
 // ********* NVIDIA **********
-
 fn extractGpuBinary(module: c.MlirModule) !c.MlirStringRef {
   const moduleOp = c.mlirModuleGetOperation(module);
   const symbols = c.mlirSymbolTableCreate(moduleOp);

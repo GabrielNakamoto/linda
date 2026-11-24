@@ -75,9 +75,11 @@ LogicalResult MSLEmitter::emitType(Value val) {
 
 // TOOD: error messages?
 LogicalResult MSLEmitter::emitBinary(Operation *op, std::string _operator) {
-  if (op->getNumOperands() != 2) return failure();
+  if (op->getNumOperands() != 2)
+    return op->emitOpError("expected 2 operands for binop");
 
-  if (failed(this->emitType(op->getResult(0)))) return failure();
+  if (failed(this->emitType(op->getResult(0))))
+    return op->emitOpError("couldn't emit result type");
   os << " ";
   op->getResult(0).print(os);
   os << " = ";
@@ -125,8 +127,9 @@ LogicalResult MSLEmitter::emitOp(Operation &op) {
       os << " = gidx." << gpu::stringifyDimension(x.getDimension()) << ";\n";
       return success();
     })
-    .Case<arith::ConstantOp>([&](auto x) {
-      if (failed(this->emitType(x.getResult()))) return failure();
+    .Case<arith::ConstantOp>([&](auto x) -> LogicalResult {
+      if (failed(this->emitType(x.getResult())))
+        return x.emitOpError("couldn't emit result type") << ": " << x.getResult().getType();
       x.getResult().print(os);
 
       os << " = ";
@@ -139,23 +142,26 @@ LogicalResult MSLEmitter::emitOp(Operation &op) {
     })
     .Case<arith::AddFOp, arith::AddIOp>([&](auto x) { return this->emitBinary(x.getOperation(), "+"); })
     .Case<arith::MulFOp, arith::MulIOp>([&](auto x) { return this->emitBinary(x.getOperation(), "*"); })
-    .Case<memref::LoadOp>([&](auto x) {
+    .Case<memref::LoadOp>([&](auto x) -> LogicalResult {
       auto buf = x.getMemref();
 
-      if (failed(this->emitType(x.getResult()))) return failure();
+      if (failed(this->emitType(x.getResult())))
+        return x.getOperation()->emitOpError("couldn't emit result type") << ": " << x.getResult().getType();
       os << " ";
       x.getResult().print(os);
       os << " = ";
       buf.print(os);
-      if (failed(this->emitOffset(x.getIndices(), buf.getType().getShape()))) return failure();
+      if (failed(this->emitOffset(x.getIndices(), buf.getType().getShape())))
+        return x.getOperation()->emitOpError("couldn't emit memref offset");
       os << ";\n";
       return success();
     })
-    .Case<memref::StoreOp>([&](auto x) {
+    .Case<memref::StoreOp>([&](auto x) -> LogicalResult {
       auto buf = x.getMemref();
 
       buf.print(os);
-      if (failed(this->emitOffset(x.getIndices(), buf.getType().getShape()))) return failure();
+      if (failed(this->emitOffset(x.getIndices(), buf.getType().getShape())))
+        return x.getOperation()->emitOpError("couldn't emit memref offset");
       os << " = ";
       x.getValue().print(os);
       os << ";\n";
@@ -188,7 +194,8 @@ LogicalResult MSLEmitter::emitKernel(gpu::GPUFuncOp &op) {
   os << "kernel void " << op.getName().str() << "(\n";
 
   for (auto &arg : op.getArguments()) {
-    if (failed(this->emitType(arg))) return failure(); // TODO: this needs to handle memref ptr conversions
+    if (failed(this->emitType(arg)))
+      return op->emitOpError("couldn't emit arg type") << ": " << arg.getType();
     os << " ";
     arg.print(os);
     os << ",\n";
